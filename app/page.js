@@ -571,7 +571,21 @@ export default function HomePage() {
                 onChange={() => setChosenProjectId(proj.id)}
                 style={{ marginRight: 8 }}
               />
-              <b>{proj.name}</b>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <b>{proj.name}</b>
+                <span style={{ fontSize: 13, color: '#333' }}>
+                  Bid price:{' '}
+                  {typeof proj.xcrBidPrice === 'number'
+                    ? `$${num(proj.xcrBidPrice)}/tCO₂e`
+                    : 'N/A'}
+                </span>
+                <span style={{ fontSize: 13, color: '#333' }}>
+                  Bid mitigation:{' '}
+                  {typeof proj.bidMitigationTonnes === 'number'
+                    ? `${proj.bidMitigationTonnes.toLocaleString()} tCO₂e`
+                    : 'N/A'}
+                </span>
+              </div>
             </label>
           ))
         ) : (
@@ -693,7 +707,20 @@ export default function HomePage() {
             <ul style={{ maxHeight: 200, overflowY: 'auto', paddingLeft: 18 }}>
               {simState.history.map((h) => (
                 <li key={h.time}>
-                  <b>Turn {h.turn}:</b> {h.event} | proj: {h.project}{' '}
+                  <b>Turn {h.turn}:</b> {h.event}{' '}
+                  {h.project && h.project !== 'none' ? (
+                    <>
+                      | proj: {h.projectName || h.project}
+                      {typeof h.bidPrice === 'number'
+                        ? ` | bid $${num(h.bidPrice)}/t`
+                        : ''}
+                      {typeof h.mitigation === 'number'
+                        ? ` | ${h.mitigation.toLocaleString()} tCO₂e`
+                        : ''}{' '}
+                    </>
+                  ) : (
+                    ' | no project selected '
+                  )}
                   {h.guidanceBroken ? (
                     <span style={{ color: 'crimson' }}>(guidance broken)</span>
                   ) : null}
