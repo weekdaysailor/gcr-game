@@ -1,0 +1,45 @@
+'use client';
+import { useState } from 'react';
+
+export default function HomePage() {
+  const [state, setState] = useState({
+    floor: 80,
+    market: 82,
+    inflation: 1.1,
+    privateShare: 0.7,
+    sentiment: 0.2,
+    cqeBuy: 0,
+  });
+
+  async function nextTurn() {
+    const res = await fetch('/api/nextturn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state),
+    });
+
+    if (!res.ok) {
+      console.error('next turn failed');
+      return;
+    }
+
+    const data = await res.json();
+    setState(data);
+  }
+
+  return (
+    <main style={{ fontFamily: 'sans-serif', padding: 40 }}>
+      <h1>🌍 CEA Simulation</h1>
+      <p><b>Floor:</b> ${state.floor.toFixed(2)}/t</p>
+      <p><b>Market:</b> ${state.market.toFixed(2)}/t</p>
+      <p><b>Inflation:</b> {state.inflation.toFixed(2)}%</p>
+      <p><b>Private Capital Share:</b> {(state.privateShare * 100).toFixed(1)}%</p>
+      <p><b>Sentiment:</b> {state.sentiment.toFixed(2)}</p>
+      <p><b>CQE Purchases:</b> {state.cqeBuy.toFixed(2)}</p>
+
+      <button onClick={nextTurn} style={{ marginTop: 20, padding: 10 }}>
+        ▶️ Next Turn
+      </button>
+    </main>
+  );
+}

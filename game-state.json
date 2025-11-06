@@ -1,0 +1,154 @@
+{
+  "turn": 10,
+  "floor": 80,
+  "market": 82.75,
+  "inflation": 1.1452318400000001,
+  "privateShare": 0.7124721791999999,
+  "sentiment": 0.24000000000000002,
+  "cqeBuy": 0,
+  "totalMitigation": 500000,
+  "lastEvent": null,
+  "projects": [
+    {
+      "id": "proj-methane",
+      "name": "Landfill Methane Oxidation",
+      "mitigationTonnes": 500000,
+      "supplyPressure": 300000,
+      "sentimentEffect": 0.03
+    },
+    {
+      "id": "proj-mangroves",
+      "name": "Mangrove Restoration Programme",
+      "mitigationTonnes": 600000,
+      "supplyPressure": 200000,
+      "sentimentEffect": 0.04
+    },
+    {
+      "id": "proj-dac",
+      "name": "Direct Air Capture Plant",
+      "mitigationTonnes": 968000,
+      "supplyPressure": 648000,
+      "sentimentEffect": 0.02
+    }
+  ],
+  "history": [
+    {
+      "turn": 9,
+      "event": "Political: Climate club expands",
+      "project": "proj-methane",
+      "floor": 80,
+      "market": 82.75,
+      "mitigation": 500000,
+      "xcrAwarded": 500000,
+      "inflation": 1.1452318400000001,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:55.032Z"
+    },
+    {
+      "turn": 8,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "floor": 80,
+      "market": 84.55,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.1452318400000001,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:45.715Z"
+    },
+    {
+      "turn": 7,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "floor": 80,
+      "market": 83.55,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.13523184,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:45.001Z"
+    },
+    {
+      "turn": 6,
+      "event": "Political: Climate club expands",
+      "project": "none",
+      "floor": 80,
+      "market": 82.39999999999999,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.12523184,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:42.964Z"
+    },
+    {
+      "turn": 5,
+      "event": "Economic shock: global rate spike",
+      "project": "none",
+      "floor": 80,
+      "market": 81.1,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.12523184,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:41.918Z"
+    },
+    {
+      "turn": 4,
+      "event": "Tech breakthrough: DAC efficiency up 10%",
+      "project": "none",
+      "floor": 80,
+      "market": 80,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.1102318400000002,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:41.209Z"
+    },
+    {
+      "turn": 3,
+      "event": "Political: Climate club expands",
+      "project": "none",
+      "floor": 80,
+      "market": 81.45,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.11,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:39.791Z"
+    },
+    {
+      "turn": 2,
+      "event": "Tech breakthrough: DAC efficiency up 10%",
+      "project": "none",
+      "floor": 80,
+      "market": 80.3,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.11,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:38.052Z"
+    },
+    {
+      "turn": 1,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "floor": 80,
+      "market": 82.85,
+      "mitigation": 0,
+      "xcrAwarded": 0,
+      "inflation": 1.11,
+      "guidanceBroken": false,
+      "time": "2025-11-05T23:47:36.392Z"
+    }
+  ],
+  "members": [
+    {
+      "country": "EU",
+      "joinedAt": "2025-11-05T23:47:32.817Z"
+    }
+  ],
+  "credibility": 1,
+  "lastFloorChangeTurn": 0,
+  "floorStep": 5,
+  "incomingSupply": 300000
+}

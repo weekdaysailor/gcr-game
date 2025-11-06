@@ -1,0 +1,171 @@
+{
+  "turn": 14,
+  "members": [
+    {
+      "country": "EU",
+      "joinedAt": "2025-11-05T20:20:02.720Z"
+    },
+    {
+      "country": "USA",
+      "joinedAt": "2025-11-05T20:42:47.214Z"
+    }
+  ],
+  "incomingSupply": 9000000,
+  "sentiment": 0.11000000000000007,
+  "inflation": 0.15000000000000002,
+  "privateShare": 0,
+  "market": null,
+  "cqeBuy": 0,
+  "history": [
+    {
+      "turn": 13,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "floor": null,
+      "market": null,
+      "inflation": 0.15000000000000002,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:48:38.459Z"
+    },
+    {
+      "turn": 12,
+      "event": "Economic shock: global rate spike",
+      "project": "none",
+      "floor": null,
+      "market": null,
+      "inflation": 0.1,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:47:51.494Z"
+    },
+    {
+      "turn": 11,
+      "event": "Tech breakthrough: DAC hits $50/t",
+      "project": "none",
+      "floor": null,
+      "market": null,
+      "inflation": 0.1,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:46:11.881Z"
+    },
+    {
+      "turn": 10,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "floor": null,
+      "market": -68.95,
+      "inflation": 0.1,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:45:43.627Z"
+    },
+    {
+      "turn": 9,
+      "event": "Political: Climate club expands",
+      "project": "none",
+      "floor": null,
+      "market": null,
+      "inflation": 0.05,
+      "guidanceBroken": true,
+      "time": "2025-11-05T20:45:40.913Z"
+    },
+    {
+      "turn": 8,
+      "event": "Economic shock: global rate spike",
+      "project": "none",
+      "floor": null,
+      "market": -299.65,
+      "inflation": 0.05,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:45:37.955Z"
+    },
+    {
+      "turn": 7,
+      "event": "Economic shock: global rate spike",
+      "project": "none",
+      "market": -230.45,
+      "inflation": 0.05,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:45:10.322Z"
+    },
+    {
+      "turn": 6,
+      "event": "Tech breakthrough: DAC hits $50/t",
+      "project": "proj-mangroves",
+      "market": -161.5,
+      "inflation": 0.05,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:44:35.230Z"
+    },
+    {
+      "turn": 5,
+      "event": "Tech breakthrough: DAC hits $50/t",
+      "project": "none",
+      "market": -92.80000000000001,
+      "inflation": 0.05,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:44:21.950Z"
+    },
+    {
+      "turn": 4,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "proj-dac",
+      "market": -45.650000000000006,
+      "inflation": 0.05,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:42:52.621Z"
+    },
+    {
+      "turn": 3,
+      "event": "Tech breakthrough: DAC hits $50/t",
+      "project": "none",
+      "market": -18.25,
+      "inflation": null,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:42:49.161Z"
+    },
+    {
+      "turn": 2,
+      "event": "Political: Climate club expands",
+      "project": "none",
+      "market": 0.75,
+      "inflation": null,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:23:02.562Z"
+    },
+    {
+      "turn": 1,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "none",
+      "market": null,
+      "inflation": null,
+      "guidanceBroken": false,
+      "time": "2025-11-05T20:20:13.907Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-mangroves",
+      "name": "Mangrove Restoration Programme",
+      "mitigationTonnes": 600000,
+      "supplyPressure": 200000,
+      "sentimentEffect": 0.04
+    },
+    {
+      "id": "proj-methane",
+      "name": "Landfill Methane Oxidation",
+      "mitigationTonnes": 500000,
+      "supplyPressure": 300000,
+      "sentimentEffect": 0.03
+    },
+    {
+      "id": "proj-dac",
+      "name": "Direct Air Capture Plant",
+      "mitigationTonnes": 800000,
+      "supplyPressure": 800000,
+      "sentimentEffect": 0.02
+    }
+  ],
+  "totalMitigation": 600000,
+  "floor": null,
+  "lastFloorChangeTurn": 10,
+  "credibility": null
+}

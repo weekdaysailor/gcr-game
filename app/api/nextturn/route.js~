@@ -1,0 +1,31 @@
+export async function POST(request) {
+  const state = await request.json();
+
+  let { floor, market, inflation, privateShare, sentiment } = state;
+
+  // basic market move
+  market = market + sentiment * 5 - 0.00001 * 100000; // fake supply shock
+  if (market < floor) market = floor;
+
+  // CQE if price would go below floor
+  let cqeBuy = 0;
+  if (market < floor) {
+    cqeBuy = (floor - market) * (1 - privateShare);
+    inflation += cqeBuy * 0.001;
+  }
+
+  // private capital reacts to macro
+  privateShare += 0.05 * sentiment - 0.03 * inflation;
+  if (privateShare < 0) privateShare = 0;
+  if (privateShare > 1) privateShare = 1;
+
+  // little random sentiment
+  sentiment += (Math.random() - 0.5) * 0.1;
+  if (sentiment < -1) sentiment = -1;
+  if (sentiment > 1) sentiment = 1;
+
+  const newState = { floor, market, inflation, privateShare, sentiment, cqeBuy };
+  return new Response(JSON.stringify(newState), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
