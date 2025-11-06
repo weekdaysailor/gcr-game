@@ -14,6 +14,8 @@ const PROJECT_LIBRARY = [
     mitigationTonnes: 800000,
     supplyPressure: 800000,
     sentimentEffect: 0.02,
+    bidPriceRange: [95, 135],
+    bidMitigationRange: [0.85, 1.15],
   },
   {
     id: 'proj-methane',
@@ -21,6 +23,8 @@ const PROJECT_LIBRARY = [
     mitigationTonnes: 500000,
     supplyPressure: 300000,
     sentimentEffect: 0.03,
+    bidPriceRange: [60, 95],
+    bidMitigationRange: [0.9, 1.2],
   },
   {
     id: 'proj-mangroves',
@@ -28,6 +32,8 @@ const PROJECT_LIBRARY = [
     mitigationTonnes: 600000,
     supplyPressure: 200000,
     sentimentEffect: 0.04,
+    bidPriceRange: [55, 90],
+    bidMitigationRange: [0.8, 1.25],
   },
 ];
 
@@ -87,9 +93,38 @@ const EVENTS = [
   },
 ];
 
+function randomInRange(min, max) {
+  if (min === max) return min;
+  return min + Math.random() * (max - min);
+}
+
 function generateProjects() {
   const shuffled = [...PROJECT_LIBRARY].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
+  return shuffled.slice(0, 3).map((base) => {
+    const [minPrice, maxPrice] = base.bidPriceRange || [70, 110];
+    const [minMitigationFactor, maxMitigationFactor] = base.bidMitigationRange || [0.9, 1.1];
+
+    const bidPrice = Number(randomInRange(minPrice, maxPrice).toFixed(2));
+    const mitigationMultiplier = randomInRange(minMitigationFactor, maxMitigationFactor);
+    const baselineMitigation = base.mitigationTonnes || 0;
+    const baselineSupply = base.supplyPressure || 0;
+
+    const bidMitigationTonnes = Math.max(
+      0,
+      Math.round((baselineMitigation * mitigationMultiplier) / 1000) * 1000
+    );
+    const supplyRatio = baselineMitigation > 0 ? baselineSupply / baselineMitigation : 0;
+    const scaledSupply = Math.round(supplyRatio * bidMitigationTonnes);
+
+    return {
+      ...base,
+      mitigationTonnes: bidMitigationTonnes,
+      supplyPressure: scaledSupply,
+      xcrBidPrice: bidPrice,
+      bidMitigationTonnes,
+      baselineMitigationTonnes: baselineMitigation,
+    };
+  });
 }
 
 async function loadGameState() {
@@ -141,16 +176,21 @@ export async function POST(request) {
   // 1) apply chosen project
   let projectAvoidedEmissions = 0;
   let rewardAmount = 0;
+  let chosenProjectBidPrice = null;
+  let chosenProjectName = null;
   if (chosenProjectId) {
-    const proj = PROJECT_LIBRARY.find((p) => p.id === chosenProjectId);
+    const proj = (state.projects || []).find((p) => p.id === chosenProjectId);
     if (proj) {
-      state.totalMitigation += proj.mitigationTonnes;
+      const mitigationBid = proj.bidMitigationTonnes ?? proj.mitigationTonnes ?? 0;
+      state.totalMitigation += mitigationBid;
       state.sentiment += proj.sentimentEffect;
-      state.incomingSupply = (state.incomingSupply || 0) + proj.supplyPressure;
+      state.incomingSupply = (state.incomingSupply || 0) + (proj.supplyPressure || 0);
 
-      projectAvoidedEmissions = proj.mitigationTonnes;
-      // simple 1:1 reward
-      rewardAmount = proj.mitigationTonnes;
+      projectAvoidedEmissions = mitigationBid;
+      // simple 1:1 reward for now
+      rewardAmount = mitigationBid;
+      chosenProjectBidPrice = proj.xcrBidPrice ?? null;
+      chosenProjectName = proj.name || null;
     }
   } else {
     state.incomingSupply = state.incomingSupply || 0;
@@ -159,6 +199,7 @@ export async function POST(request) {
   // 2) event
   const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
   state = event.effect(state);
+  state.lastEvent = { id: event.id, title: event.title };
 
   // 3) clamp to client view to stop wild jumps
   const prevSentiment = clientState.sentiment ?? 0;
@@ -242,9 +283,11 @@ export async function POST(request) {
     turn: state.turn,
     event: event.title,
     project: chosenProjectId || 'none',
+    projectName: chosenProjectName || chosenProjectId || 'none',
     floor: state.floor,
     market: state.market,
     mitigation: projectAvoidedEmissions,
+    bidPrice: chosenProjectBidPrice,
     xcrAwarded: rewardAmount,
     inflation: state.inflation,
     guidanceBroken,
