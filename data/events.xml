@@ -1,0 +1,90 @@
+<events>
+  <event>
+    <id>tech-dac-50</id>
+    <title>Tech breakthrough: DAC efficiency up 10%</title>
+    <description>Learning-by-doing delivers a step-change in DAC capture efficiency.</description>
+    <justified>true</justified>
+    <effects>
+      <stat>
+        <target>sentiment</target>
+        <operation>add</operation>
+        <value>0.02</value>
+      </stat>
+      <stat>
+        <target>incomingSupply</target>
+        <operation>add</operation>
+        <value>200000</value>
+      </stat>
+      <stat>
+        <target>market</target>
+        <operation>add</operation>
+        <value>-1.5</value>
+      </stat>
+      <projectUpgrade>
+        <projectId>proj-dac</projectId>
+        <mitigationMultiplier>1.1</mitigationMultiplier>
+        <supplyMultiplier>0.9</supplyMultiplier>
+        <xcrBidMultiplier>0.95</xcrBidMultiplier>
+      </projectUpgrade>
+    </effects>
+  </event>
+  <event>
+    <id>tipping-arctic</id>
+    <title>Climate shock: Arctic methane release warning</title>
+    <description>Scientists warn of destabilising methane hydrates in the Arctic.</description>
+    <justified>true</justified>
+    <effects>
+      <stat>
+        <target>sentiment</target>
+        <operation>add</operation>
+        <value>-0.03</value>
+      </stat>
+      <stat>
+        <target>inflation</target>
+        <operation>add</operation>
+        <value>0.01</value>
+      </stat>
+    </effects>
+  </event>
+  <event>
+    <id>club-expands</id>
+    <title>Political: Climate club expands</title>
+    <description>New members commit to supporting the CEA framework.</description>
+    <justified>false</justified>
+    <effects>
+      <stat>
+        <target>sentiment</target>
+        <operation>add</operation>
+        <value>0.04</value>
+      </stat>
+      <stat>
+        <target>privateShare</target>
+        <operation>add</operation>
+        <value>0.02</value>
+      </stat>
+    </effects>
+  </event>
+  <event>
+    <id>rate-spike</id>
+    <title>Economic shock: global rate spike</title>
+    <description>Markets price in a faster tightening cycle across major economies.</description>
+    <justified>false</justified>
+    <effects>
+      <stat>
+        <target>sentiment</target>
+        <operation>add</operation>
+        <value>-0.03</value>
+      </stat>
+      <stat>
+        <target>privateShare</target>
+        <operation>add</operation>
+        <value>-0.02</value>
+      </stat>
+      <stat>
+        <target>inflation</target>
+        <operation>add</operation>
+        <value>0.015</value>
+      </stat>
+    </effects>
+  </event>
+</events>

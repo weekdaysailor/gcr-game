@@ -278,6 +278,8 @@ export default function HomePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [chosenProjectId, setChosenProjectId] = useState(null);
   const [floorDecision, setFloorDecision] = useState('hold');
+  const [projectDrafts, setProjectDrafts] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
 
   // manual floor setter
   const [newFloor, setNewFloor] = useState(80);
@@ -377,22 +379,26 @@ export default function HomePage() {
         .then((data) => {
           if (typeof data.floor === 'number') {
             setNewFloor(data.floor);
-            setSimState((prev) => ({
-              ...prev,
-              floor: data.floor,
-              market: typeof data.market === 'number' ? data.market : prev.market,
-              turn: typeof data.turn === 'number' ? data.turn : prev.turn,
-              history: Array.isArray(data.history) ? data.history : prev.history,
-              projects: Array.isArray(data.projects) ? data.projects : prev.projects,
-              members: Array.isArray(data.members) ? data.members : prev.members,
-              votes: Array.isArray(data.votes) ? data.votes : prev.votes,
-              totalMitigation:
-                typeof data.totalMitigation === 'number'
-                  ? data.totalMitigation
-                  : prev.totalMitigation,
-              credibility:
-                typeof data.credibility === 'number' ? data.credibility : prev.credibility,
-            }));
+            setSimState((prev) => {
+              const nextProjects = Array.isArray(data.projects) ? data.projects : prev.projects;
+              syncProjects(nextProjects);
+              return {
+                ...prev,
+                floor: data.floor,
+                market: typeof data.market === 'number' ? data.market : prev.market,
+                turn: typeof data.turn === 'number' ? data.turn : prev.turn,
+                history: Array.isArray(data.history) ? data.history : prev.history,
+                projects: nextProjects,
+                members: Array.isArray(data.members) ? data.members : prev.members,
+                votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+                totalMitigation:
+                  typeof data.totalMitigation === 'number'
+                    ? data.totalMitigation
+                    : prev.totalMitigation,
+                credibility:
+                  typeof data.credibility === 'number' ? data.credibility : prev.credibility,
+              };
+            });
           }
         })
         .catch(() => {});
@@ -433,10 +439,13 @@ export default function HomePage() {
     const data = await res.json();
 
     let nextFloorValue = simState.floor;
+    let upcomingProjects = [];
     setSimState((prev) => {
       const computedFloor =
         typeof data.floor === 'number' ? data.floor : prev.floor;
       nextFloorValue = computedFloor;
+      const resolvedProjects = Array.isArray(data.projects) ? data.projects : prev.projects;
+      upcomingProjects = resolvedProjects;
       return {
         ...prev,
         ...data,
@@ -454,11 +463,13 @@ export default function HomePage() {
         credibility:
           typeof data.credibility === 'number' ? data.credibility : prev.credibility,
         history: Array.isArray(data.history) ? data.history : prev.history,
-        projects: Array.isArray(data.projects) ? data.projects : prev.projects,
+        projects: resolvedProjects,
         members: Array.isArray(data.members) ? data.members : prev.members,
         votes: Array.isArray(data.votes) ? data.votes : prev.votes,
       };
     });
+
+    syncProjects(upcomingProjects);
 
     setNewFloor(nextFloorValue);
 
@@ -527,6 +538,56 @@ export default function HomePage() {
       // ignore network failure; polling will resync
     }
   }
+
+  const syncProjects = (projects) => {
+    if (!Array.isArray(projects) || projects.length === 0) {
+      setProjectDrafts([]);
+      setActiveProjectId(null);
+      setChosenProjectId((prev) => (prev ? null : prev));
+      return;
+    }
+
+    const clones = projects.map((proj) => ({ ...proj }));
+    setProjectDrafts(clones);
+    setActiveProjectId((prev) => {
+      if (prev && clones.some((proj) => proj.id === prev)) {
+        return prev;
+      }
+      return clones[0]?.id || null;
+    });
+    setChosenProjectId((prev) => (prev && clones.some((proj) => proj.id === prev) ? prev : null));
+  };
+
+  const handleSelectProject = (projectId) => {
+    setActiveProjectId(projectId);
+  };
+
+  const handleChooseProject = (projectId) => {
+    setChosenProjectId(projectId);
+  };
+
+  const updateProjectField = (projectId, field, rawValue, { numeric = false } = {}) => {
+    setProjectDrafts((prev) =>
+      prev.map((proj) => {
+        if (!proj || proj.id !== projectId) return proj;
+        const next = { ...proj };
+        if (numeric) {
+          const parsed = Number(rawValue);
+          const safeValue = Number.isFinite(parsed) ? parsed : 0;
+          next[field] = safeValue;
+          if (field === 'co2eMitigation' || field === 'mitigationTonnes') {
+            next.co2eMitigation = safeValue;
+            next.mitigationTonnes = safeValue;
+          }
+        } else {
+          next[field] = rawValue;
+        }
+        return next;
+      })
+    );
+  };
+
+  const activeProject = projectDrafts.find((proj) => proj.id === activeProjectId);
 
   // if not in club, show onboarding
   if (!inClimateClub) {
@@ -782,34 +843,193 @@ export default function HomePage() {
         <p style={{ color: '#888' }}>No event yet — click “Next Turn”.</p>
       )}
 
-      {/* project choices */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ marginBottom: 6 }}>Project proposals this turn</h2>
-        {simState.projects && simState.projects.length > 0 ? (
-          simState.projects.map((proj) => (
-            <label
-              key={proj.id}
-              style={{
-                display: 'block',
-                border: '1px solid #ddd',
-                borderRadius: 6,
-                padding: '8px 10px',
-                marginBottom: 8,
-                background: chosenProjectId === proj.id ? '#f0f7ff' : '#fff',
-                cursor: 'pointer',
-              }}
-            >
-              <input
-                type="radio"
-                name="project"
-                value={proj.id}
-                checked={chosenProjectId === proj.id}
-                onChange={() => setChosenProjectId(proj.id)}
-                style={{ marginRight: 8 }}
-              />
-              <b>{proj.name}</b>
-            </label>
-          ))
+      <section className="section-card">
+        <h2>Project proposals this turn</h2>
+        {projectDrafts.length > 0 ? (
+          <div className="project-browser">
+            <div className="project-browser__list">
+              {projectDrafts.map((proj) => {
+                const isActive = activeProjectId === proj.id;
+                const isChosen = chosenProjectId === proj.id;
+                const mitigationLabel =
+                  typeof proj.co2eMitigation === 'number' && Number.isFinite(proj.co2eMitigation)
+                    ? `${proj.co2eMitigation.toLocaleString()} tCO₂e`
+                    : '';
+                return (
+                  <button
+                    type="button"
+                    key={proj.id}
+                    className={`project-browser__item${isActive ? ' is-active' : ''}${
+                      isChosen ? ' is-chosen' : ''
+                    }`}
+                    onClick={() => handleSelectProject(proj.id)}
+                  >
+                    <span className="project-browser__name">{proj.name}</span>
+                    {mitigationLabel ? (
+                      <span className="project-browser__meta">{mitigationLabel}</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="project-browser__details">
+              {activeProject ? (
+                <form className="project-form" onSubmit={(e) => e.preventDefault()}>
+                  <div className="project-form__header">
+                    <h3>{activeProject.name}</h3>
+                    <span className="muted">ID: {activeProject.id}</span>
+                  </div>
+                  <label className="project-form__field">
+                    <span>Project name</span>
+                    <input
+                      type="text"
+                      value={activeProject.name}
+                      onChange={(e) =>
+                        updateProjectField(activeProject.id, 'name', e.target.value)
+                      }
+                    />
+                  </label>
+                  <label className="project-form__field">
+                    <span>Description</span>
+                    <textarea
+                      rows={3}
+                      value={activeProject.description || ''}
+                      onChange={(e) =>
+                        updateProjectField(activeProject.id, 'description', e.target.value)
+                      }
+                    />
+                  </label>
+                  <label className="project-form__field">
+                    <span>Co-benefits</span>
+                    <textarea
+                      rows={2}
+                      value={activeProject.coBenefits || ''}
+                      onChange={(e) =>
+                        updateProjectField(activeProject.id, 'coBenefits', e.target.value)
+                      }
+                    />
+                  </label>
+                  <div className="project-form__grid">
+                    <label className="project-form__field">
+                      <span>XCR bid (cost)</span>
+                      <input
+                        type="number"
+                        value={
+                          Number.isFinite(activeProject.xcrBid) ? activeProject.xcrBid : 0
+                        }
+                        min={0}
+                        step={1000}
+                        onChange={(e) =>
+                          updateProjectField(activeProject.id, 'xcrBid', e.target.value, {
+                            numeric: true,
+                          })
+                        }
+                      />
+                    </label>
+                    <label className="project-form__field">
+                      <span>CO₂e mitigation (t)</span>
+                      <input
+                        type="number"
+                        value={
+                          Number.isFinite(activeProject.co2eMitigation)
+                            ? activeProject.co2eMitigation
+                            : 0
+                        }
+                        min={0}
+                        step={1000}
+                        onChange={(e) =>
+                          updateProjectField(
+                            activeProject.id,
+                            'co2eMitigation',
+                            e.target.value,
+                            { numeric: true }
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="project-form__grid">
+                    <label className="project-form__field">
+                      <span>Supply pressure</span>
+                      <input
+                        type="number"
+                        value={
+                          Number.isFinite(activeProject.supplyPressure)
+                            ? activeProject.supplyPressure
+                            : 0
+                        }
+                        min={0}
+                        step={1000}
+                        onChange={(e) =>
+                          updateProjectField(
+                            activeProject.id,
+                            'supplyPressure',
+                            e.target.value,
+                            { numeric: true }
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="project-form__field">
+                      <span>Sentiment effect</span>
+                      <input
+                        type="number"
+                        value={
+                          Number.isFinite(activeProject.sentimentEffect)
+                            ? activeProject.sentimentEffect
+                            : 0
+                        }
+                        step={0.01}
+                        onChange={(e) =>
+                          updateProjectField(
+                            activeProject.id,
+                            'sentimentEffect',
+                            e.target.value,
+                            { numeric: true }
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="project-form__field">
+                      <span>Insurance buffer (%)</span>
+                      <input
+                        type="number"
+                        value={
+                          Number.isFinite(activeProject.insuranceBuffer)
+                            ? activeProject.insuranceBuffer
+                            : 0
+                        }
+                        min={0}
+                        step={0.1}
+                        onChange={(e) =>
+                          updateProjectField(
+                            activeProject.id,
+                            'insuranceBuffer',
+                            e.target.value,
+                            { numeric: true }
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="project-form__actions">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => handleChooseProject(activeProject.id)}
+                    >
+                      Select this project
+                    </button>
+                    {chosenProjectId === activeProject.id ? (
+                      <span className="muted">Currently selected</span>
+                    ) : null}
+                  </div>
+                </form>
+              ) : (
+                <p className="muted">Select a project to view and edit details.</p>
+              )}
+            </div>
+          </div>
         ) : (
           <p style={{ color: '#888' }}>No projects loaded yet. Click Next Turn.</p>
         )}

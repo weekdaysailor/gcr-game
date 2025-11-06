@@ -1,125 +1,38 @@
 // app/api/nextturn/route.js
-import { promises as fs } from 'fs';
-import path from 'path';
-
 export const dynamic = 'force-dynamic';
 
-const GAME_FILE = path.join(process.cwd(), 'game-state.json');
+import { loadGameState, saveGameState } from '../../../lib/gameState';
+import {
+  applyProjectUpgrade,
+  generateProjects,
+  getEventDefinitions,
+  getProjectLibrary,
+  normalizeProject,
+} from '../../../lib/data';
 
-// base project library
-const PROJECT_LIBRARY = [
-  {
-    id: 'proj-dac',
-    name: 'Direct Air Capture Plant',
-    mitigationTonnes: 800000,
-    supplyPressure: 800000,
-    sentimentEffect: 0.02,
-  },
-  {
-    id: 'proj-methane',
-    name: 'Landfill Methane Oxidation',
-    mitigationTonnes: 500000,
-    supplyPressure: 300000,
-    sentimentEffect: 0.03,
-  },
-  {
-    id: 'proj-mangroves',
-    name: 'Mangrove Restoration Programme',
-    mitigationTonnes: 600000,
-    supplyPressure: 200000,
-    sentimentEffect: 0.04,
-  },
-];
-
-// events (DAC updated)
-const EVENTS = [
-  {
-    id: 'tech-dac-50',
-    title: 'Tech breakthrough: DAC efficiency up 10%',
-    justified: true,
-    effect: (state) => {
-      // markets like the tech
-      state.sentiment += 0.02;
-      // more DAC now viable
-      state.incomingSupply += 200000;
-      // put slight downward pressure on XCR
-      state.market = (state.market || 0) - 1.5;
-
-      // actually upgrade future DAC projects
-      const dac = PROJECT_LIBRARY.find((p) => p.id === 'proj-dac');
-      if (dac) {
-        dac.mitigationTonnes = Math.round(dac.mitigationTonnes * 1.1);
-        dac.supplyPressure = Math.round(dac.supplyPressure * 0.9);
+function applyEventOperations(state, event) {
+  if (!event) return state;
+  for (const operation of event.operations || []) {
+    if (!operation) continue;
+    if (operation.type === 'stat') {
+      const target = operation.target;
+      if (!target) continue;
+      const current = Number(state[target]) || 0;
+      const value = Number(operation.value);
+      if (!Number.isFinite(value)) continue;
+      const op = (operation.operation || 'add').toLowerCase();
+      if (op === 'set') {
+        state[target] = value;
+      } else if (op === 'multiply' || op === 'mul' || op === 'times') {
+        state[target] = current * value;
+      } else {
+        state[target] = current + value;
       }
-      return state;
-    },
-  },
-  {
-    id: 'tipping-arctic',
-    title: 'Climate shock: Arctic methane release warning',
-    justified: true,
-    effect: (state) => {
-      state.sentiment -= 0.03;
-      state.inflation += 0.01;
-      return state;
-    },
-  },
-  {
-    id: 'club-expands',
-    title: 'Political: Climate club expands',
-    justified: false,
-    effect: (state) => {
-      state.sentiment += 0.04;
-      state.privateShare += 0.02;
-      return state;
-    },
-  },
-  {
-    id: 'rate-spike',
-    title: 'Economic shock: global rate spike',
-    justified: false,
-    effect: (state) => {
-      state.sentiment -= 0.03;
-      state.privateShare -= 0.02;
-      state.inflation += 0.015;
-      return state;
-    },
-  },
-];
-
-function generateProjects() {
-  const shuffled = [...PROJECT_LIBRARY].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
-}
-
-async function loadGameState() {
-  try {
-    const data = await fs.readFile(GAME_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return {
-      turn: 1,
-      floor: 80,
-      market: 82,
-      inflation: 1.1,
-      privateShare: 0.7,
-      sentiment: 0.2,
-      cqeBuy: 0,
-      totalMitigation: 0,
-      lastEvent: null,
-      projects: generateProjects(),
-      history: [],
-      members: [],
-      credibility: 1.0,
-      lastFloorChangeTurn: 0,
-      floorStep: 5,
-      votes: [],
-    };
+    } else if (operation.type === 'projectUpgrade') {
+      applyProjectUpgrade(operation);
+    }
   }
-}
-
-async function saveGameState(state) {
-  await fs.writeFile(GAME_FILE, JSON.stringify(state, null, 2), 'utf-8');
+  return state;
 }
 
 export async function POST(request) {
@@ -141,32 +54,44 @@ export async function POST(request) {
   }
 
   // 1) apply chosen project
+  const projectLibrary = await getProjectLibrary();
+
   let projectAvoidedEmissions = 0;
   let rewardAmount = 0;
   if (chosenProjectId) {
-    const proj = PROJECT_LIBRARY.find((p) => p.id === chosenProjectId);
+    const fromState = Array.isArray(state.projects)
+      ? state.projects.find((p) => p && p.id === chosenProjectId)
+      : null;
+    const rawProject = fromState || projectLibrary.find((p) => p.id === chosenProjectId);
+    const proj = normalizeProject(rawProject);
     if (proj) {
-      state.totalMitigation += proj.mitigationTonnes;
+      state.totalMitigation += proj.co2eMitigation;
       state.sentiment += proj.sentimentEffect;
       state.incomingSupply = (state.incomingSupply || 0) + proj.supplyPressure;
 
-      projectAvoidedEmissions = proj.mitigationTonnes;
-      // simple 1:1 reward
-      rewardAmount = proj.mitigationTonnes;
+      projectAvoidedEmissions = proj.co2eMitigation;
+      rewardAmount = proj.xcrBid || proj.co2eMitigation;
     }
   } else {
     state.incomingSupply = state.incomingSupply || 0;
   }
 
   // 2) event
-  const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-  state = event.effect(state);
-  state.lastEvent = {
-    id: event.id,
-    title: event.title,
-    justified: event.justified === true,
-    occurredAt: new Date().toISOString(),
-  };
+  const events = await getEventDefinitions();
+  let event = null;
+  if (events.length) {
+    event = events[Math.floor(Math.random() * events.length)];
+    applyEventOperations(state, event);
+    state.lastEvent = {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      justified: event.justified === true,
+      occurredAt: new Date().toISOString(),
+    };
+  } else {
+    state.lastEvent = null;
+  }
 
   // 3) clamp to client view to stop wild jumps
   const prevSentiment = clientState.sentiment ?? 0;
@@ -201,7 +126,7 @@ export async function POST(request) {
 
   if (floorDecision && floorDecision !== 'hold') {
     const turnsSince = state.turn - (state.lastFloorChangeTurn || 0);
-    const allowed = turnsSince >= FLOOR_COOLDOWN || event.justified === true;
+    const allowed = turnsSince >= FLOOR_COOLDOWN || (event && event.justified === true);
 
     if (allowed) {
       if (floorDecision === 'raise') {
@@ -248,7 +173,7 @@ export async function POST(request) {
   state.history = state.history || [];
   state.history.unshift({
     turn: state.turn,
-    event: event.title,
+    event: event ? event.title : 'none',
     project: chosenProjectId || 'none',
     floor: state.floor,
     market: state.market,
@@ -262,7 +187,7 @@ export async function POST(request) {
 
   // 9) next turn
   state.turn += 1;
-  state.projects = generateProjects();
+  state.projects = await generateProjects();
 
   await saveGameState(state);
 
