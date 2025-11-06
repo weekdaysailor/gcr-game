@@ -36,9 +36,11 @@ export async function GET() {
 
 export async function POST(request) {
   const body = await request.json();
-  const { country, vote, turn } = body;
+  const { vote, turn } = body;
+  const countryInput = typeof body.country === 'string' ? body.country.trim() : '';
+  const country = countryInput.toUpperCase();
 
-  if (typeof country !== 'string' || country.length === 0) {
+  if (!country) {
     return new Response(JSON.stringify({ error: 'country required' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
@@ -55,7 +57,15 @@ export async function POST(request) {
   const state = await loadGameState();
   const votes = Array.isArray(state.votes) ? state.votes : [];
   const now = new Date().toISOString();
-  const normalizedTurn = Number.isFinite(turn) ? turn : Math.max(1, (state.turn || 1) - 1);
+  let parsedTurn = Number(turn);
+  if (!Number.isFinite(parsedTurn)) {
+    const coerced = Number.parseInt(turn, 10);
+    parsedTurn = Number.isFinite(coerced) ? coerced : undefined;
+  }
+
+  const numericStateTurn = Number(Number(state.turn));
+  const stateTurn = Number.isFinite(numericStateTurn) && numericStateTurn > 0 ? numericStateTurn : 1;
+  const normalizedTurn = Number.isFinite(parsedTurn) ? parsedTurn : Math.max(1, stateTurn);
 
   const existingIndex = votes.findIndex((v) => v.country === country);
   const entry = { country, vote, updatedAt: now, turn: normalizedTurn };

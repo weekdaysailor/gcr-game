@@ -24,7 +24,15 @@ async function saveGameState(state) {
 
 export async function POST(request) {
   const body = await request.json();
-  const { country } = body;
+  const rawCountry = typeof body.country === 'string' ? body.country.trim() : '';
+  const country = rawCountry.toUpperCase();
+
+  if (!country) {
+    return new Response(JSON.stringify({ error: 'country required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   let state = await loadGameState();
   state.members = state.members || [];

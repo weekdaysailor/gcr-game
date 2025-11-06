@@ -161,6 +161,12 @@ export async function POST(request) {
   // 2) event
   const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
   state = event.effect(state);
+  state.lastEvent = {
+    id: event.id,
+    title: event.title,
+    justified: event.justified === true,
+    occurredAt: new Date().toISOString(),
+  };
 
   // 3) clamp to client view to stop wild jumps
   const prevSentiment = clientState.sentiment ?? 0;

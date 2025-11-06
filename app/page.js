@@ -51,6 +51,8 @@ function formatTimeAgo(iso) {
 }
 
 function VoteScoreboard({ votes = [], currentCountry }) {
+  const normalizedCurrent =
+    typeof currentCountry === 'string' ? currentCountry.trim().toUpperCase() : '';
   const counts = votes.reduce(
     (acc, v) => {
       if (v && typeof v.vote === 'string' && acc[v.vote] !== undefined) {
@@ -106,17 +108,19 @@ function VoteScoreboard({ votes = [], currentCountry }) {
           </thead>
           <tbody>
             {sortedVotes.map((entry) => {
-              const isYou = currentCountry && entry.country === currentCountry;
+              const entryCountry =
+                typeof entry.country === 'string' ? entry.country.toUpperCase() : entry.country;
+              const isYou = normalizedCurrent && entryCountry === normalizedCurrent;
               return (
                 <tr
-                  key={`${entry.country}-${entry.updatedAt || 'now'}`}
+                  key={`${entryCountry}-${entry.updatedAt || 'now'}`}
                   style={{
                     background: isYou ? '#e3f1ff' : 'transparent',
                     color: '#1f2d3d',
                   }}
                 >
                   <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5', fontWeight: isYou ? 600 : 500 }}>
-                    {entry.country}
+                    {entryCountry}
                     {isYou ? ' (you)' : ''}
                   </td>
                   <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5' }}>
@@ -438,22 +442,22 @@ export default function HomePage() {
         ...data,
         floor: computedFloor,
         market: typeof data.market === 'number' ? data.market : prev.market,
-      inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
-      privateShare:
-        typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
-      sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
-      cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
-      totalMitigation:
-        typeof data.totalMitigation === 'number'
-          ? data.totalMitigation
-          : prev.totalMitigation,
-      credibility:
-        typeof data.credibility === 'number' ? data.credibility : prev.credibility,
-      history: Array.isArray(data.history) ? data.history : prev.history,
-      projects: Array.isArray(data.projects) ? data.projects : prev.projects,
-      members: Array.isArray(data.members) ? data.members : prev.members,
-      votes: Array.isArray(data.votes) ? data.votes : prev.votes,
-    };
+        inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
+        privateShare:
+          typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
+        sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
+        cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
+        totalMitigation:
+          typeof data.totalMitigation === 'number'
+            ? data.totalMitigation
+            : prev.totalMitigation,
+        credibility:
+          typeof data.credibility === 'number' ? data.credibility : prev.credibility,
+        history: Array.isArray(data.history) ? data.history : prev.history,
+        projects: Array.isArray(data.projects) ? data.projects : prev.projects,
+        members: Array.isArray(data.members) ? data.members : prev.members,
+        votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+      };
     });
 
     setNewFloor(nextFloorValue);
@@ -763,6 +767,16 @@ export default function HomePage() {
           }}
         >
           <strong>Event this turn:</strong> {simState.lastEvent.title}
+          {simState.lastEvent.occurredAt ? (
+            <span style={{ marginLeft: 8, color: '#3f6d5c', fontSize: 12 }}>
+              ({formatTimeAgo(simState.lastEvent.occurredAt)})
+            </span>
+          ) : null}
+          {simState.lastEvent.justified ? (
+            <span style={{ marginLeft: 6, color: '#1f5f4f', fontSize: 12 }}>
+              – justification allows floor changes
+            </span>
+          ) : null}
         </div>
       ) : (
         <p style={{ color: '#888' }}>No event yet — click “Next Turn”.</p>
