@@ -126,5 +126,6 @@
   "credibility": 1,
   "lastFloorChangeTurn": 0,
   "floorStep": 5,
-  "incomingSupply": 583200
+  "incomingSupply": 300000,
+  "votes": []
 }
