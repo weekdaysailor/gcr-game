@@ -1,131 +1,50 @@
 {
-  "turn": 8,
+  "turn": 1,
   "floor": 80,
-  "market": 80,
-  "inflation": 1.1556691799999999,
-  "privateShare": 0.6432866164,
-  "sentiment": 0.18000000000000002,
-  "cqeBuy": 0.6691799999999971,
-  "totalMitigation": 1064800,
+  "market": 82,
+  "inflation": 1.1,
+  "privateShare": 0.7,
+  "sentiment": 0.2,
+  "cqeBuy": 0,
+  "totalMitigation": 0,
+  "cumulativeXcr": 0,
   "lastEvent": null,
   "projects": [
     {
+      "id": "proj-dac",
+      "name": "Direct Air Capture Plant",
+      "coBenefits": "Creates clean energy jobs and develops regional carbon removal expertise",
+      "r": 0.65,
+      "co2eMitigation": 800000,
+      "xcrBid": 1200000,
+      "supplyPressure": 800000,
+      "sentimentEffect": 0.02
+    },
+    {
       "id": "proj-methane",
       "name": "Landfill Methane Oxidation",
-      "mitigationTonnes": 500000,
+      "coBenefits": "Reduces local air pollution and improves public health",
+      "r": 0.55,
+      "co2eMitigation": 500000,
+      "xcrBid": 750000,
       "supplyPressure": 300000,
       "sentimentEffect": 0.03
     },
     {
-      "id": "proj-dac",
-      "name": "Direct Air Capture Plant",
-      "mitigationTonnes": 1064800,
-      "supplyPressure": 583200,
-      "sentimentEffect": 0.02
-    },
-    {
       "id": "proj-mangroves",
       "name": "Mangrove Restoration Programme",
-      "mitigationTonnes": 600000,
+      "coBenefits": "Protects coastal communities and restores biodiversity",
+      "r": 0.7,
+      "co2eMitigation": 600000,
+      "xcrBid": 680000,
       "supplyPressure": 200000,
       "sentimentEffect": 0.04
     }
   ],
-  "history": [
-    {
-      "turn": 7,
-      "event": "Political: Climate club expands",
-      "project": "proj-dac",
-      "floor": 80,
-      "market": 80,
-      "mitigation": 1064800,
-      "xcrAwarded": 1064800,
-      "inflation": 1.1556691799999999,
-      "guidanceBroken": false,
-      "time": "2025-11-06T15:00:04.565Z"
-    },
-    {
-      "turn": 6,
-      "event": "Political: Climate club expands",
-      "project": "none",
-      "floor": 80,
-      "market": 82.2,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:56.639Z"
-    },
-    {
-      "turn": 5,
-      "event": "Tech breakthrough: DAC efficiency up 10%",
-      "project": "none",
-      "floor": 80,
-      "market": 81.5,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:52.409Z"
-    },
-    {
-      "turn": 4,
-      "event": "Economic shock: global rate spike",
-      "project": "none",
-      "floor": 80,
-      "market": 84.5,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:50.165Z"
-    },
-    {
-      "turn": 3,
-      "event": "Climate shock: Arctic methane release warning",
-      "project": "none",
-      "floor": 80,
-      "market": 84.1,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.14,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:46.856Z"
-    },
-    {
-      "turn": 2,
-      "event": "Economic shock: global rate spike",
-      "project": "none",
-      "floor": 80,
-      "market": 83.55,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.13,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:43.172Z"
-    },
-    {
-      "turn": 1,
-      "event": "Economic shock: global rate spike",
-      "project": "none",
-      "floor": 80,
-      "market": 82.85,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.115,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:37.890Z"
-    }
-  ],
-  "members": [
-    {
-      "country": "USA",
-      "joinedAt": "2025-11-06T14:59:30.210Z"
-    }
-  ],
-  "credibility": 1,
+  "history": [],
+  "members": [],
+  "credibility": 1.0,
   "lastFloorChangeTurn": 0,
   "floorStep": 5,
-  "incomingSupply": 300000,
   "votes": []
 }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projects>
+  <project
+    id="proj-dac"
+    name="Direct Air Capture Plant"
+    coBenefits="Creates clean energy jobs and develops regional carbon removal expertise"
+    r="0.65"
+    co2eMitigation="800000"
+    xcrBid="1200000"
+    supplyPressure="800000"
+    sentimentEffect="0.02"
+  />
+  <project
+    id="proj-methane"
+    name="Landfill Methane Oxidation"
+    coBenefits="Reduces local air pollution and improves public health"
+    r="0.55"
+    co2eMitigation="500000"
+    xcrBid="750000"
+    supplyPressure="300000"
+    sentimentEffect="0.03"
+  />
+  <project
+    id="proj-mangroves"
+    name="Mangrove Restoration Programme"
+    coBenefits="Protects coastal communities and restores biodiversity"
+    r="0.7"
+    co2eMitigation="600000"
+    xcrBid="680000"
+    supplyPressure="200000"
+    sentimentEffect="0.04"
+  />
+  <project
+    id="proj-grid"
+    name="Regional Grid Modernization"
+    coBenefits="Improves grid reliability while enabling renewable integration"
+    r="0.6"
+    co2eMitigation="450000"
+    xcrBid="540000"
+    supplyPressure="250000"
+    sentimentEffect="0.025"
+  />
+  <project
+    id="proj-cookstoves"
+    name="Clean Cookstove Deployment"
+    coBenefits="Reduces indoor air pollution and frees up household time"
+    r="0.5"
+    co2eMitigation="350000"
+    xcrBid="400000"
+    supplyPressure="150000"
+    sentimentEffect="0.035"
+  />
+</projects>

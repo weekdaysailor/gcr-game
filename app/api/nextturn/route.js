@@ -1,35 +1,16 @@
 // app/api/nextturn/route.js
 import { promises as fs } from 'fs';
 import path from 'path';
+import {
+  ensureProjectLibrary,
+  generateProjects,
+  findProjectById,
+  getProjectLibraryReference,
+} from '../../../lib/projects';
 
 export const dynamic = 'force-dynamic';
 
 const GAME_FILE = path.join(process.cwd(), 'game-state.json');
-
-// base project library
-const PROJECT_LIBRARY = [
-  {
-    id: 'proj-dac',
-    name: 'Direct Air Capture Plant',
-    mitigationTonnes: 800000,
-    supplyPressure: 800000,
-    sentimentEffect: 0.02,
-  },
-  {
-    id: 'proj-methane',
-    name: 'Landfill Methane Oxidation',
-    mitigationTonnes: 500000,
-    supplyPressure: 300000,
-    sentimentEffect: 0.03,
-  },
-  {
-    id: 'proj-mangroves',
-    name: 'Mangrove Restoration Programme',
-    mitigationTonnes: 600000,
-    supplyPressure: 200000,
-    sentimentEffect: 0.04,
-  },
-];
 
 // events (DAC updated)
 const EVENTS = [
@@ -46,9 +27,9 @@ const EVENTS = [
       state.market = (state.market || 0) - 1.5;
 
       // actually upgrade future DAC projects
-      const dac = PROJECT_LIBRARY.find((p) => p.id === 'proj-dac');
+      const dac = getProjectLibraryReference().find((p) => p.id === 'proj-dac');
       if (dac) {
-        dac.mitigationTonnes = Math.round(dac.mitigationTonnes * 1.1);
+        dac.co2eMitigation = Math.round((dac.co2eMitigation || dac.mitigationTonnes || 0) * 1.1);
         dac.supplyPressure = Math.round(dac.supplyPressure * 0.9);
       }
       return state;
@@ -87,16 +68,19 @@ const EVENTS = [
   },
 ];
 
-function generateProjects() {
-  const shuffled = [...PROJECT_LIBRARY].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3);
-}
-
 async function loadGameState() {
   try {
     const data = await fs.readFile(GAME_FILE, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed.projects)) {
+      parsed.projects = [];
+    }
+    if (typeof parsed.cumulativeXcr !== 'number') {
+      parsed.cumulativeXcr = 0;
+    }
+    return parsed;
   } catch {
+    const projects = await generateProjects();
     return {
       turn: 1,
       floor: 80,
@@ -106,8 +90,9 @@ async function loadGameState() {
       sentiment: 0.2,
       cqeBuy: 0,
       totalMitigation: 0,
+      cumulativeXcr: 0,
       lastEvent: null,
-      projects: generateProjects(),
+      projects,
       history: [],
       members: [],
       credibility: 1.0,
@@ -126,6 +111,7 @@ export async function POST(request) {
   const clientState = await request.json();
   const { chosenProjectId, floorDecision, playerCountry } = clientState;
 
+  await ensureProjectLibrary();
   let state = await loadGameState();
   state.votes = Array.isArray(state.votes) ? state.votes : [];
 
@@ -144,15 +130,25 @@ export async function POST(request) {
   let projectAvoidedEmissions = 0;
   let rewardAmount = 0;
   if (chosenProjectId) {
-    const proj = PROJECT_LIBRARY.find((p) => p.id === chosenProjectId);
+    const proj = await findProjectById(chosenProjectId);
     if (proj) {
-      state.totalMitigation += proj.mitigationTonnes;
-      state.sentiment += proj.sentimentEffect;
-      state.incomingSupply = (state.incomingSupply || 0) + proj.supplyPressure;
+      const mitigation =
+        typeof proj.co2eMitigation === 'number'
+          ? proj.co2eMitigation
+          : typeof proj.mitigationTonnes === 'number'
+          ? proj.mitigationTonnes
+          : 0;
+      const sentimentDelta = typeof proj.sentimentEffect === 'number' ? proj.sentimentEffect : 0;
+      const supplyPressure = typeof proj.supplyPressure === 'number' ? proj.supplyPressure : 0;
+      const xcrBid = typeof proj.xcrBid === 'number' ? proj.xcrBid : mitigation;
 
-      projectAvoidedEmissions = proj.mitigationTonnes;
-      // simple 1:1 reward
-      rewardAmount = proj.mitigationTonnes;
+      state.totalMitigation += mitigation;
+      state.sentiment += sentimentDelta;
+      state.incomingSupply = (state.incomingSupply || 0) + supplyPressure;
+
+      projectAvoidedEmissions = mitigation;
+      rewardAmount = xcrBid;
+      state.cumulativeXcr = (state.cumulativeXcr || 0) + rewardAmount;
     }
   } else {
     state.incomingSupply = state.incomingSupply || 0;
@@ -254,6 +250,7 @@ export async function POST(request) {
     market: state.market,
     mitigation: projectAvoidedEmissions,
     xcrAwarded: rewardAmount,
+    cumulativeXcr: state.cumulativeXcr || 0,
     inflation: state.inflation,
     guidanceBroken,
     time: new Date().toISOString(),
@@ -262,7 +259,7 @@ export async function POST(request) {
 
   // 9) next turn
   state.turn += 1;
-  state.projects = generateProjects();
+  state.projects = await generateProjects();
 
   await saveGameState(state);
 

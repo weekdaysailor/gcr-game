@@ -150,6 +150,25 @@ function num(v, digits = 2) {
   return (0).toFixed(digits);
 }
 
+function formatWithUnit(value, unit, options = {}) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  const formatter = new Intl.NumberFormat(undefined, options);
+  return `${formatter.format(value)}${unit ? ` ${unit}` : ''}`.trim();
+}
+
+function formatTonnage(value, suffix = 't') {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(2)} M${suffix}`;
+  }
+  return `${Math.round(value).toLocaleString()} ${suffix}`;
+}
+
+function formatRValue(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  return value.toFixed(2);
+}
+
 // chart component (no deps)
 function LineChart({ width = 500, height = 220, series = [], title = '' }) {
   const padding = 35;
@@ -263,6 +282,7 @@ export default function HomePage() {
     lastEvent: null,
     projects: [],
     totalMitigation: 0,
+    cumulativeXcr: 0,
     history: [],
     members: [],
     credibility: 1.0,
@@ -277,6 +297,7 @@ export default function HomePage() {
   const [inClimateClub, setInClimateClub] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [chosenProjectId, setChosenProjectId] = useState(null);
+  const [focusedProjectId, setFocusedProjectId] = useState(null);
   const [floorDecision, setFloorDecision] = useState('hold');
 
   // manual floor setter
@@ -390,6 +411,10 @@ export default function HomePage() {
                 typeof data.totalMitigation === 'number'
                   ? data.totalMitigation
                   : prev.totalMitigation,
+              cumulativeXcr:
+                typeof data.cumulativeXcr === 'number'
+                  ? data.cumulativeXcr
+                  : prev.cumulativeXcr,
               credibility:
                 typeof data.credibility === 'number' ? data.credibility : prev.credibility,
             }));
@@ -451,6 +476,10 @@ export default function HomePage() {
           typeof data.totalMitigation === 'number'
             ? data.totalMitigation
             : prev.totalMitigation,
+        cumulativeXcr:
+          typeof data.cumulativeXcr === 'number'
+            ? data.cumulativeXcr
+            : prev.cumulativeXcr,
         credibility:
           typeof data.credibility === 'number' ? data.credibility : prev.credibility,
         history: Array.isArray(data.history) ? data.history : prev.history,
@@ -714,8 +743,8 @@ export default function HomePage() {
   let cumulativeXcr = 0;
   let cumulativeMitigation = 0;
   const floorSeries = [];
-  const mitigationSeries = [];
-  const xcrSeries = [];
+  const mitigationSeries = [{ x: 0, y: 0 }];
+  const xcrSeries = [{ x: 0, y: 0 }];
 
   history.forEach((h, idx) => {
     const turn = h.turn ?? idx + 1;
@@ -735,6 +764,20 @@ export default function HomePage() {
     cumulativeXcr += xcrThisTurn;
     xcrSeries.push({ x: turn, y: cumulativeXcr });
   });
+
+  const projects = Array.isArray(simState.projects) ? simState.projects : [];
+  const hasFocusedProject = projects.some((p) => p.id === focusedProjectId);
+  const activeProjectId = hasFocusedProject
+    ? focusedProjectId
+    : projects.length > 0
+    ? projects[0].id
+    : null;
+  const focusedProject =
+    activeProjectId != null
+      ? projects.find((p) => p.id === activeProjectId) || null
+      : null;
+  const isFocusedProjectChosen =
+    focusedProject && chosenProjectId === focusedProject.id ? true : false;
 
   return (
     <main style={{ fontFamily: 'sans-serif', padding: 40, maxWidth: 1100 }}>
@@ -785,31 +828,115 @@ export default function HomePage() {
       {/* project choices */}
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ marginBottom: 6 }}>Project proposals this turn</h2>
-        {simState.projects && simState.projects.length > 0 ? (
-          simState.projects.map((proj) => (
-            <label
-              key={proj.id}
+        {projects.length > 0 ? (
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 240, flex: '0 0 240px' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {projects.map((proj) => {
+                  const isFocused = activeProjectId === proj.id;
+                  const isSelected = chosenProjectId === proj.id;
+                  return (
+                    <li key={proj.id} style={{ marginBottom: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => setFocusedProjectId(proj.id)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '10px 12px',
+                          borderRadius: 6,
+                          border: isFocused ? '2px solid #2f6ad9' : '1px solid #d0d7e2',
+                          background: isFocused ? '#edf3ff' : '#fff',
+                          color: '#1f2d3d',
+                          cursor: 'pointer',
+                          fontWeight: isSelected ? 600 : 500,
+                          boxShadow: isFocused ? '0 0 0 2px rgba(47,106,217,0.2)' : 'none',
+                        }}
+                      >
+                        {proj.name}
+                        {isSelected ? ' • selected' : ''}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <div
               style={{
-                display: 'block',
-                border: '1px solid #ddd',
-                borderRadius: 6,
-                padding: '8px 10px',
-                marginBottom: 8,
-                background: chosenProjectId === proj.id ? '#f0f7ff' : '#fff',
-                cursor: 'pointer',
+                flex: '1 1 320px',
+                border: '1px solid #e0e6f0',
+                borderRadius: 8,
+                padding: '16px 18px',
+                background: '#fafbfd',
+                minWidth: 280,
               }}
             >
-              <input
-                type="radio"
-                name="project"
-                value={proj.id}
-                checked={chosenProjectId === proj.id}
-                onChange={() => setChosenProjectId(proj.id)}
-                style={{ marginRight: 8 }}
-              />
-              <b>{proj.name}</b>
-            </label>
-          ))
+              {focusedProject ? (
+                <>
+                  <h3 style={{ marginTop: 0 }}>{focusedProject.name}</h3>
+                  <p style={{ color: '#4b6075', marginBottom: 14 }}>
+                    <strong>Co-Benefits:</strong>{' '}
+                    {focusedProject.coBenefits || '—'}
+                  </p>
+                  <dl
+                    style={{
+                      margin: 0,
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(140px, 1fr) 1fr',
+                      gap: '8px 16px',
+                      fontSize: 14,
+                    }}
+                  >
+                    <dt style={{ fontWeight: 600, color: '#2f3f56' }}>R value</dt>
+                    <dd style={{ margin: 0 }}>{formatRValue(focusedProject.r)}</dd>
+                    <dt style={{ fontWeight: 600, color: '#2f3f56' }}>CO₂e mitigation</dt>
+                    <dd style={{ margin: 0 }}>
+                      {formatTonnage(focusedProject.co2eMitigation, 'tCO₂e')}
+                    </dd>
+                    <dt style={{ fontWeight: 600, color: '#2f3f56' }}>XCR bid</dt>
+                    <dd style={{ margin: 0 }}>
+                      {formatWithUnit(focusedProject.xcrBid, 'XCR', { maximumFractionDigits: 0 })}
+                    </dd>
+                    <dt style={{ fontWeight: 600, color: '#2f3f56' }}>Supply pressure</dt>
+                    <dd style={{ margin: 0 }}>{formatTonnage(focusedProject.supplyPressure, 't')}</dd>
+                    <dt style={{ fontWeight: 600, color: '#2f3f56' }}>Sentiment effect</dt>
+                    <dd style={{ margin: 0 }}>
+                      {typeof focusedProject.sentimentEffect === 'number'
+                        ? num(focusedProject.sentimentEffect, 3)
+                        : '—'}
+                    </dd>
+                  </dl>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!focusedProject) return;
+                      setChosenProjectId((prev) =>
+                        prev === focusedProject.id ? null : focusedProject.id
+                      );
+                    }}
+                    disabled={!focusedProject}
+                    style={{
+                      marginTop: 18,
+                      padding: '10px 14px',
+                      borderRadius: 6,
+                      border: 'none',
+                      background: isFocusedProjectChosen ? '#2f855a' : '#2f6ad9',
+                      color: '#fff',
+                      fontWeight: 600,
+                      cursor: focusedProject ? 'pointer' : 'not-allowed',
+                      opacity: focusedProject ? 1 : 0.6,
+                    }}
+                  >
+                    {isFocusedProjectChosen
+                      ? '✅ Selected — click to unselect'
+                      : 'Select this project for funding'}
+                  </button>
+                </>
+              ) : (
+                <p style={{ color: '#888' }}>Choose a project from the list to view its details.</p>
+              )}
+            </div>
+          </div>
         ) : (
           <p style={{ color: '#888' }}>No projects loaded yet. Click Next Turn.</p>
         )}
@@ -925,6 +1052,10 @@ export default function HomePage() {
               ? (simState.totalMitigation / 1_000_000).toFixed(2)
               : '0.00'}{' '}
             MtCO₂e
+          </p>
+          <p>
+            <b>Cumulative XCR Awarded:</b>{' '}
+            {formatWithUnit(simState.cumulativeXcr, 'XCR', { maximumFractionDigits: 0 })}
           </p>
         </div>
 
