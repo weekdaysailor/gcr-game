@@ -1,12 +1,12 @@
 {
-  "turn": 10,
+  "turn": 8,
   "floor": 80,
-  "market": 82.75,
-  "inflation": 1.1452318400000001,
-  "privateShare": 0.7124721791999999,
-  "sentiment": 0.24000000000000002,
-  "cqeBuy": 0,
-  "totalMitigation": 500000,
+  "market": 80,
+  "inflation": 1.1556691799999999,
+  "privateShare": 0.6432866164,
+  "sentiment": 0.18000000000000002,
+  "cqeBuy": 0.6691799999999971,
+  "totalMitigation": 1064800,
   "lastEvent": null,
   "projects": [
     {
@@ -17,138 +17,114 @@
       "sentimentEffect": 0.03
     },
     {
+      "id": "proj-dac",
+      "name": "Direct Air Capture Plant",
+      "mitigationTonnes": 1064800,
+      "supplyPressure": 583200,
+      "sentimentEffect": 0.02
+    },
+    {
       "id": "proj-mangroves",
       "name": "Mangrove Restoration Programme",
       "mitigationTonnes": 600000,
       "supplyPressure": 200000,
       "sentimentEffect": 0.04
-    },
-    {
-      "id": "proj-dac",
-      "name": "Direct Air Capture Plant",
-      "mitigationTonnes": 968000,
-      "supplyPressure": 648000,
-      "sentimentEffect": 0.02
     }
   ],
   "history": [
     {
-      "turn": 9,
-      "event": "Political: Climate club expands",
-      "project": "proj-methane",
-      "floor": 80,
-      "market": 82.75,
-      "mitigation": 500000,
-      "xcrAwarded": 500000,
-      "inflation": 1.1452318400000001,
-      "guidanceBroken": false,
-      "time": "2025-11-05T23:47:55.032Z"
-    },
-    {
-      "turn": 8,
-      "event": "Climate shock: Arctic methane release warning",
-      "project": "none",
-      "floor": 80,
-      "market": 84.55,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1452318400000001,
-      "guidanceBroken": false,
-      "time": "2025-11-05T23:47:45.715Z"
-    },
-    {
       "turn": 7,
-      "event": "Climate shock: Arctic methane release warning",
-      "project": "none",
+      "event": "Political: Climate club expands",
+      "project": "proj-dac",
       "floor": 80,
-      "market": 83.55,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.13523184,
+      "market": 80,
+      "mitigation": 1064800,
+      "xcrAwarded": 1064800,
+      "inflation": 1.1556691799999999,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:45.001Z"
+      "time": "2025-11-06T15:00:04.565Z"
     },
     {
       "turn": 6,
       "event": "Political: Climate club expands",
       "project": "none",
       "floor": 80,
-      "market": 82.39999999999999,
+      "market": 82.2,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.12523184,
+      "inflation": 1.1549999999999998,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:42.964Z"
+      "time": "2025-11-06T14:59:56.639Z"
     },
     {
       "turn": 5,
-      "event": "Economic shock: global rate spike",
+      "event": "Tech breakthrough: DAC efficiency up 10%",
       "project": "none",
       "floor": 80,
-      "market": 81.1,
+      "market": 81.5,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.12523184,
+      "inflation": 1.1549999999999998,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:41.918Z"
+      "time": "2025-11-06T14:59:52.409Z"
     },
     {
       "turn": 4,
-      "event": "Tech breakthrough: DAC efficiency up 10%",
+      "event": "Economic shock: global rate spike",
       "project": "none",
       "floor": 80,
-      "market": 80,
+      "market": 84.5,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.1102318400000002,
+      "inflation": 1.1549999999999998,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:41.209Z"
+      "time": "2025-11-06T14:59:50.165Z"
     },
     {
       "turn": 3,
-      "event": "Political: Climate club expands",
+      "event": "Climate shock: Arctic methane release warning",
       "project": "none",
       "floor": 80,
-      "market": 81.45,
+      "market": 84.1,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.11,
+      "inflation": 1.14,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:39.791Z"
+      "time": "2025-11-06T14:59:46.856Z"
     },
     {
       "turn": 2,
-      "event": "Tech breakthrough: DAC efficiency up 10%",
+      "event": "Economic shock: global rate spike",
       "project": "none",
       "floor": 80,
-      "market": 80.3,
+      "market": 83.55,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.11,
+      "inflation": 1.13,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:38.052Z"
+      "time": "2025-11-06T14:59:43.172Z"
     },
     {
       "turn": 1,
-      "event": "Climate shock: Arctic methane release warning",
+      "event": "Economic shock: global rate spike",
       "project": "none",
       "floor": 80,
       "market": 82.85,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.11,
+      "inflation": 1.115,
       "guidanceBroken": false,
-      "time": "2025-11-05T23:47:36.392Z"
+      "time": "2025-11-06T14:59:37.890Z"
     }
   ],
   "members": [
     {
-      "country": "EU",
-      "joinedAt": "2025-11-05T23:47:32.817Z"
+      "country": "USA",
+      "joinedAt": "2025-11-06T14:59:30.210Z"
     }
   ],
   "credibility": 1,
   "lastFloorChangeTurn": 0,
   "floorStep": 5,
-  "incomingSupply": 300000
+  "incomingSupply": 583200
 }
