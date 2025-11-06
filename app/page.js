@@ -72,27 +72,38 @@ function VoteScoreboard({ votes = [], currentCountry }) {
     });
 
   return (
-    <section className="section-card card-tonal compact scoreboard">
-      <h3>CEA Vote Scoreboard</h3>
-      <p className="scoreboard__description">
+    <div
+      style={{
+        marginTop: 24,
+        marginBottom: 24,
+        padding: '16px 18px',
+        border: '1px solid #d9e5f6',
+        borderRadius: 8,
+        background: '#f4f9ff',
+      }}
+    >
+      <h3 style={{ margin: 0, marginBottom: 6 }}>CEA Vote Scoreboard</h3>
+      <p style={{ margin: '0 0 12px', color: '#4b6075', fontSize: 13 }}>
         Live vote preferences from climate club members (auto-refreshes every few seconds).
       </p>
-      <div className="scoreboard__counts">
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 14 }}>
         {Object.entries(VOTE_LABELS).map(([key, label]) => (
-          <div key={key}>
-            <span>{label}:</span>{' '}
-            <span>{counts[key] || 0}</span>
+          <div key={key} style={{ fontSize: 13 }}>
+            <span style={{ color: '#335', fontWeight: 600 }}>{label}:</span>{' '}
+            <span style={{ color: '#1f4a8a', fontVariantNumeric: 'tabular-nums' }}>
+              {counts[key] || 0}
+            </span>
           </div>
         ))}
       </div>
       {sortedVotes.length > 0 ? (
-        <table>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr>
-              <th>Country</th>
-              <th>Vote</th>
-              <th>Turn</th>
-              <th>Updated</th>
+            <tr style={{ textAlign: 'left', color: '#37506a' }}>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Country</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Vote</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Turn</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Updated</th>
             </tr>
           </thead>
           <tbody>
@@ -101,23 +112,35 @@ function VoteScoreboard({ votes = [], currentCountry }) {
                 typeof entry.country === 'string' ? entry.country.toUpperCase() : entry.country;
               const isYou = normalizedCurrent && entryCountry === normalizedCurrent;
               return (
-                <tr key={`${entryCountry}-${entry.updatedAt || 'now'}`} className={isYou ? 'highlight' : ''}>
-                  <td>
+                <tr
+                  key={`${entryCountry}-${entry.updatedAt || 'now'}`}
+                  style={{
+                    background: isYou ? '#e3f1ff' : 'transparent',
+                    color: '#1f2d3d',
+                  }}
+                >
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5', fontWeight: isYou ? 600 : 500 }}>
                     {entryCountry}
                     {isYou ? ' (you)' : ''}
                   </td>
-                  <td>{VOTE_LABELS[entry.vote] || entry.vote}</td>
-                  <td>{typeof entry.turn === 'number' ? entry.turn : '—'}</td>
-                  <td>{formatTimeAgo(entry.updatedAt)}</td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5' }}>
+                    {VOTE_LABELS[entry.vote] || entry.vote}
+                  </td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5' }}>
+                    {typeof entry.turn === 'number' ? entry.turn : '—'}
+                  </td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5', color: '#4b6075' }}>
+                    {formatTimeAgo(entry.updatedAt)}
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       ) : (
-        <p className="muted">No votes recorded yet — be the first to weigh in.</p>
+        <p style={{ color: '#6c7a89', margin: 0 }}>No votes recorded yet — be the first to weigh in.</p>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -144,8 +167,8 @@ function LineChart({ width = 500, height = 220, series = [], title = '' }) {
     height - padding - ((y - minY) / (maxY - minY || 1)) * (height - padding * 1.4);
 
   return (
-    <div className="chart-shell">
-      {title ? <h4>{title}</h4> : null}
+    <div style={{ background: '#fff', border: '1px solid #eee', borderRadius: 6, padding: 8 }}>
+      {title ? <h4 style={{ margin: '4px 0 8px' }}>{title}</h4> : null}
       <svg width={width} height={height}>
         <line
           x1={padding}
@@ -181,11 +204,18 @@ function LineChart({ width = 500, height = 220, series = [], title = '' }) {
           );
         })}
       </svg>
-      <div className="chart-legend">
+      <div style={{ display: 'flex', gap: 10, marginTop: 6, flexWrap: 'wrap' }}>
         {series.map((s) => (
-          <div key={s.name}>
-            <span className="legend-swatch" style={{ background: s.color }} />
-            <span>{s.name}</span>
+          <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span
+              style={{
+                width: 12,
+                height: 3,
+                background: s.color,
+                display: 'inline-block',
+              }}
+            />
+            <span style={{ fontSize: 12 }}>{s.name}</span>
           </div>
         ))}
       </div>
@@ -501,87 +531,96 @@ export default function HomePage() {
   // if not in club, show onboarding
   if (!inClimateClub) {
     return (
-      <main className="app-shell">
-        <header className="page-header">
-          <div className="stack">
-            <h1>🌍 Join the Climate Club</h1>
-            <p className="subtitle">
-              Choose your country, confirm CQE, and agree to the draft MOU before entering.
-              (ChatGPT can make mistakes — please validate the MOU text against the actual
-              paper.)
-            </p>
-          </div>
-          <div className="page-actions">
-            <button type="button" onClick={attemptJoinClub} className="btn-primary">
-              ✅ Join Climate Club
-            </button>
-          </div>
-        </header>
+      <main style={{ fontFamily: 'sans-serif', padding: 40, maxWidth: 720 }}>
+        <h1>🌍 Join the Climate Club</h1>
+        <p>
+          Choose your country, confirm CQE, and agree to the draft MOU before entering. (ChatGPT
+          can make mistakes — please validate the MOU text against the actual paper.)
+        </p>
 
-        <section className="section-card">
-          <div className="form-stack">
-            <label className="form-control">
-              <strong>1. Select your country</strong>
-              <select value={selectedCountry} onChange={handleCountryChange}>
-                {COUNTRY_OPTIONS.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <label style={{ display: 'block', marginTop: 20 }}>
+          <b>1. Select your country</b>
+          <br />
+          <select value={selectedCountry} onChange={handleCountryChange} style={{ marginTop: 6 }}>
+            {COUNTRY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
 
-            <label className="form-control">
-              <strong>2. Nationally Determined Contribution (NDC)</strong>
-              <textarea value={ndcText} onChange={(e) => setNdcText(e.target.value)} />
-            </label>
+        <label style={{ display: 'block', marginTop: 20 }}>
+          <b>2. Nationally Determined Contribution (NDC)</b>
+          <br />
+          <textarea
+            value={ndcText}
+            onChange={(e) => setNdcText(e.target.value)}
+            rows={4}
+            style={{ width: '100%', marginTop: 6 }}
+          />
+        </label>
 
-            <label className="checkbox-row">
+        <label style={{ display: 'block', marginTop: 20 }}>
+          <input
+            type="checkbox"
+            checked={centralBankOk}
+            onChange={(e) => setCentralBankOk(e.target.checked)}
+          />{' '}
+          3. I confirm this country&apos;s central bank will provide CQE to defend the XCR floor.
+        </label>
+
+        <div style={{ marginTop: 20 }}>
+          <button
+            type="button"
+            onClick={() => setShowMouModal(true)}
+            style={{
+              textDecoration: 'underline',
+              background: 'transparent',
+              border: 'none',
+              color: '#2f6ad9',
+              cursor: 'pointer',
+            }}
+          >
+            📄 View Climate Club MOU (draft)
+          </button>
+          <div style={{ marginTop: 8 }}>
+            <label>
               <input
                 type="checkbox"
-                checked={centralBankOk}
-                onChange={(e) => setCentralBankOk(e.target.checked)}
-              />
-              <span>
-                3. I confirm this country’s central bank will provide CQE to defend the XCR
-                floor.
-              </span>
-            </label>
-
-            <div className="stack">
-              <button type="button" onClick={() => setShowMouModal(true)} className="btn-ghost">
-                📄 View Climate Club MOU (draft)
-              </button>
-              <label className="checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={mouAgreed}
-                  onChange={(e) => setMouAgreed(e.target.checked)}
-                  disabled={!mouScrolledToEnd}
-                />
-                <span>
-                  I have read the MOU and agree to proceed.
-                  {!mouScrolledToEnd ? (
-                    <span className="note-warning"> (Scroll to the bottom of the MOU first)</span>
-                  ) : null}
+                checked={mouAgreed}
+                onChange={(e) => setMouAgreed(e.target.checked)}
+                disabled={!mouScrolledToEnd}
+              />{' '}
+              I have read the MOU and agree to proceed.
+              {!mouScrolledToEnd ? (
+                <span style={{ color: '#c00', marginLeft: 6, fontSize: 12 }}>
+                  (Scroll to the bottom of the MOU first)
                 </span>
-              </label>
-            </div>
-
-            <label className="checkbox-row">
-              <input
-                type="checkbox"
-                checked={wantReset}
-                onChange={(e) => setWantReset(e.target.checked)}
-              />
-              <span>Start new game (reset global state) before joining</span>
+              ) : null}
             </label>
-
-            {errorMsg ? <p className="error-text">{errorMsg}</p> : null}
           </div>
-        </section>
+        </div>
 
-        <section className="section-card compact">
+        <label style={{ display: 'block', marginTop: 20 }}>
+          <input
+            type="checkbox"
+            checked={wantReset}
+            onChange={(e) => setWantReset(e.target.checked)}
+          />{' '}
+          Start new game (reset global state) before joining
+        </label>
+
+        {errorMsg ? <p style={{ color: 'crimson', marginTop: 15 }}>{errorMsg}</p> : null}
+
+        <button
+          onClick={attemptJoinClub}
+          style={{ marginTop: 25, padding: '10px 16px', fontWeight: 600 }}
+        >
+          ✅ Join Climate Club
+        </button>
+
+        <div style={{ marginTop: 30 }}>
           <h3>Current Climate Club Members</h3>
           {simState.members && simState.members.length > 0 ? (
             <ul>
@@ -590,9 +629,9 @@ export default function HomePage() {
               ))}
             </ul>
           ) : (
-            <p className="muted">No members yet.</p>
+            <p style={{ color: '#888' }}>No members yet.</p>
           )}
-        </section>
+        </div>
 
         <VoteScoreboard
           votes={Array.isArray(simState.votes) ? simState.votes : []}
@@ -600,26 +639,64 @@ export default function HomePage() {
         />
 
         {showMouModal ? (
-          <div className="modal-overlay">
-            <div className="modal-card">
-              <div className="modal-card__header">
-                <h2>Climate Club MOU (Draft)</h2>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2000,
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                width: 'min(90vw, 700px)',
+                maxHeight: '85vh',
+                borderRadius: 8,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #eee' }}>
+                <h2 style={{ margin: 0, fontSize: 18 }}>Climate Club MOU (Draft)</h2>
               </div>
-              <div ref={mouRef} onScroll={handleMouScroll} className="modal-card__content">
+              <div
+                ref={mouRef}
+                onScroll={handleMouScroll}
+                style={{
+                  padding: '14px 18px',
+                  overflowY: 'auto',
+                  flex: 1,
+                  whiteSpace: 'pre-wrap',
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                }}
+              >
                 {SAMPLE_MOU}
               </div>
-              <div className="modal-card__footer">
-                <button type="button" onClick={() => setShowMouModal(false)} className="btn-secondary">
+              <div
+                style={{ padding: '12px 18px', borderTop: '1px solid #eee', textAlign: 'right' }}
+              >
+                <button onClick={() => setShowMouModal(false)} style={{ marginRight: 8 }}>
                   Close
                 </button>
                 <button
-                  type="button"
                   onClick={() => {
                     setMouAgreed(true);
                     setShowMouModal(false);
                   }}
                   disabled={!mouScrolledToEnd}
-                  className="btn-primary"
+                  style={{
+                    padding: '6px 10px',
+                    background: mouScrolledToEnd ? '#2f6ad9' : '#ccc',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 4,
+                  }}
                 >
                   I agree
                 </button>
@@ -660,22 +737,13 @@ export default function HomePage() {
   });
 
   return (
-    <main className="app-shell app-shell--wide">
-      <header className="page-header">
-        <div className="stack">
-          <h1>🌍 CEA Simulation</h1>
-          <p className="subtitle">
-            Playing as: <b>{selectedCountry}</b>
-          </p>
-        </div>
-        <div className="page-actions">
-          <button type="button" onClick={nextTurn} className="btn-primary">
-            ▶️ Next Turn
-          </button>
-        </div>
-      </header>
+    <main style={{ fontFamily: 'sans-serif', padding: 40, maxWidth: 1100 }}>
+      <h1>🌍 CEA Simulation</h1>
+      <p style={{ color: '#2e6f4e' }}>
+        Playing as: <b>{selectedCountry}</b>
+      </p>
 
-      <section className="section-card compact">
+      <div style={{ marginBottom: 20 }}>
         <h3>Climate Club Members</h3>
         {simState.members && simState.members.length > 0 ? (
           <ul>
@@ -684,193 +752,202 @@ export default function HomePage() {
             ))}
           </ul>
         ) : (
-          <p className="muted">No other members yet.</p>
+          <p style={{ color: '#888' }}>No other members yet.</p>
         )}
-      </section>
+      </div>
 
       {simState.lastEvent ? (
-        <section className="section-card card-tonal compact">
-          <div>
-            <strong>Event this turn:</strong> {simState.lastEvent.title}
-            {simState.lastEvent.occurredAt ? (
-              <span className="muted"> ({formatTimeAgo(simState.lastEvent.occurredAt)})</span>
-            ) : null}
-            {simState.lastEvent.justified ? (
-              <span className="muted"> – justification allows floor changes</span>
-            ) : null}
-          </div>
-        </section>
+        <div
+          style={{
+            background: '#e6f5f0',
+            border: '1px solid #b6ddd1',
+            padding: '10px 14px',
+            marginBottom: '20px',
+            borderRadius: 6,
+          }}
+        >
+          <strong>Event this turn:</strong> {simState.lastEvent.title}
+          {simState.lastEvent.occurredAt ? (
+            <span style={{ marginLeft: 8, color: '#3f6d5c', fontSize: 12 }}>
+              ({formatTimeAgo(simState.lastEvent.occurredAt)})
+            </span>
+          ) : null}
+          {simState.lastEvent.justified ? (
+            <span style={{ marginLeft: 6, color: '#1f5f4f', fontSize: 12 }}>
+              – justification allows floor changes
+            </span>
+          ) : null}
+        </div>
       ) : (
-        <section className="section-card compact">
-          <p className="muted">No event yet — click “Next Turn”.</p>
-        </section>
+        <p style={{ color: '#888' }}>No event yet — click “Next Turn”.</p>
       )}
 
-      <section className="section-card">
-        <h2>Project proposals this turn</h2>
+      {/* project choices */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ marginBottom: 6 }}>Project proposals this turn</h2>
         {simState.projects && simState.projects.length > 0 ? (
-          <div className="stack">
-            {simState.projects.map((proj) => (
-              <label
-                key={proj.id}
-                className={`project-option${chosenProjectId === proj.id ? ' is-selected' : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="project"
-                  value={proj.id}
-                  checked={chosenProjectId === proj.id}
-                  onChange={() => setChosenProjectId(proj.id)}
-                />
-                <div>
-                  <b>{proj.name}</b>
-                </div>
-              </label>
-            ))}
-          </div>
+          simState.projects.map((proj) => (
+            <label
+              key={proj.id}
+              style={{
+                display: 'block',
+                border: '1px solid #ddd',
+                borderRadius: 6,
+                padding: '8px 10px',
+                marginBottom: 8,
+                background: chosenProjectId === proj.id ? '#f0f7ff' : '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="radio"
+                name="project"
+                value={proj.id}
+                checked={chosenProjectId === proj.id}
+                onChange={() => setChosenProjectId(proj.id)}
+                style={{ marginRight: 8 }}
+              />
+              <b>{proj.name}</b>
+            </label>
+          ))
         ) : (
-          <p className="muted">No projects loaded yet. Click Next Turn.</p>
+          <p style={{ color: '#888' }}>No projects loaded yet. Click Next Turn.</p>
         )}
-      </section>
+      </div>
 
       <VoteScoreboard
         votes={Array.isArray(simState.votes) ? simState.votes : []}
         currentCountry={selectedCountry}
       />
 
-      <section className="section-card">
-        <h2>Floor decision</h2>
-        <p className="muted">
+      {/* floor decision */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ marginBottom: 6 }}>Floor decision</h2>
+        <p style={{ color: '#666', marginBottom: 6 }}>
           You can only change the floor every few turns unless the event justifies it.
         </p>
-        <div className="radio-group">
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="floor"
-              value="hold"
-              checked={floorDecision === 'hold'}
-              onChange={() => submitVote('hold')}
-            />
-            <span>Hold</span>
-          </label>
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="floor"
-              value="raise"
-              checked={floorDecision === 'raise'}
-              onChange={() => submitVote('raise')}
-            />
-            <span>Raise</span>
-          </label>
-          <label className="radio-option">
-            <input
-              type="radio"
-              name="floor"
-              value="lower"
-              checked={floorDecision === 'lower'}
-              onChange={() => submitVote('lower')}
-            />
-            <span>Lower</span>
-          </label>
-        </div>
-      </section>
+        <label style={{ marginRight: 12 }}>
+          <input
+            type="radio"
+            name="floor"
+            value="hold"
+            checked={floorDecision === 'hold'}
+            onChange={() => submitVote('hold')}
+          />{' '}
+          Hold
+        </label>
+        <label style={{ marginRight: 12 }}>
+          <input
+            type="radio"
+            name="floor"
+            value="raise"
+            checked={floorDecision === 'raise'}
+            onChange={() => submitVote('raise')}
+          />{' '}
+          Raise
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="floor"
+            value="lower"
+            checked={floorDecision === 'lower'}
+            onChange={() => submitVote('lower')}
+          />{' '}
+          Lower
+        </label>
+      </div>
 
-      <section className="section-card">
-        <h3>Admin: Set XCR Price Floor (no voting)</h3>
-        <p className="muted">
+      {/* direct floor setter */}
+      <div
+        style={{
+          marginBottom: 20,
+          padding: '12px 16px',
+          border: '1px solid #e1e1e1',
+          borderRadius: 6,
+          background: '#f9fafb',
+        }}
+      >
+        <h3 style={{ marginTop: 0 }}>Admin: Set XCR Price Floor (no voting)</h3>
+        <p style={{ color: '#666', fontSize: 13 }}>
           For now, whichever user sets the floor wins. Later this can be guarded by a voting rule.
         </p>
-        <div className="inline-controls">
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <label>
-            New floor ($/t):
+            New floor ($/t):{' '}
             <input
               type="number"
               value={newFloor}
               onChange={(e) => setNewFloor(e.target.value)}
+              style={{ width: 100 }}
               min={10}
-              className="input-compact"
             />
           </label>
-          <button onClick={setFloorNow} className="btn-secondary">
+          <button onClick={setFloorNow} style={{ padding: '6px 12px' }}>
             💾 Set floor now
           </button>
-          <span className="muted">
+          <span style={{ color: '#555' }}>
             Current floor: <b>${num(simState.floor)}</b>/t
           </span>
         </div>
-      </section>
-
-      <div className="two-column-grid">
-        <section className="section-card compact">
-          <h3>Key indicators</h3>
-          <div className="stat-list">
-            <p>
-              <span>Turn</span>
-              <span>{simState.turn || 1}</span>
-            </p>
-            <p>
-              <span>Floor</span>
-              <span>${num(simState.floor)}/t</span>
-            </p>
-            <p>
-              <span>Market</span>
-              <span>${num(simState.market)}/t</span>
-            </p>
-            <p>
-              <span>Inflation</span>
-              <span>{num(simState.inflation)}%</span>
-            </p>
-            <p>
-              <span>Private Capital Share</span>
-              <span>
-                {typeof simState.privateShare === 'number'
-                  ? (simState.privateShare * 100).toFixed(1)
-                  : '0.0'}
-                %
-              </span>
-            </p>
-            <p>
-              <span>CQE Purchases</span>
-              <span>{num(simState.cqeBuy)}</span>
-            </p>
-            <p>
-              <span>Credibility</span>
-              <span>{num(simState.credibility)}</span>
-            </p>
-            <p>
-              <span>Total Mitigation</span>
-              <span>
-                {typeof simState.totalMitigation === 'number'
-                  ? (simState.totalMitigation / 1_000_000).toFixed(2)
-                  : '0.00'}{' '}
-                MtCO₂e
-              </span>
-            </p>
-          </div>
-        </section>
-
-        <section className="section-card compact">
-          <h3>Turn History</h3>
-          {simState.history && simState.history.length > 0 ? (
-            <div className="scroll-area">
-              <ul>
-                {simState.history.map((h) => (
-                  <li key={h.time}>
-                    <b>Turn {h.turn}:</b> {h.event} | proj: {h.project}{' '}
-                    {h.guidanceBroken ? <span className="note-warning">(guidance broken)</span> : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="muted">No turns yet.</p>
-          )}
-        </section>
       </div>
 
-      <section className="section-card">
+      <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
+        <div>
+          <p>
+            <b>Turn:</b> {simState.turn || 1}
+          </p>
+          <p>
+            <b>Floor:</b> ${num(simState.floor)}/t
+          </p>
+          <p>
+            <b>Market:</b> ${num(simState.market)}/t
+          </p>
+          <p>
+            <b>Inflation:</b> {num(simState.inflation)}%
+          </p>
+          <p>
+            <b>Private Capital Share:</b>{' '}
+            {typeof simState.privateShare === 'number'
+              ? (simState.privateShare * 100).toFixed(1)
+              : '0.0'}
+            %
+          </p>
+          <p>
+            <b>CQE Purchases:</b> {num(simState.cqeBuy)}
+          </p>
+          <p>
+            <b>Credibility:</b> {num(simState.credibility)}
+          </p>
+          <p>
+            <b>Total Mitigation (all time):</b>{' '}
+            {typeof simState.totalMitigation === 'number'
+              ? (simState.totalMitigation / 1_000_000).toFixed(2)
+              : '0.00'}{' '}
+            MtCO₂e
+          </p>
+        </div>
+
+        <div style={{ minWidth: 300 }}>
+          <h3>Turn History</h3>
+          {simState.history && simState.history.length > 0 ? (
+            <ul style={{ maxHeight: 200, overflowY: 'auto', paddingLeft: 18 }}>
+              {simState.history.map((h) => (
+                <li key={h.time}>
+                  <b>Turn {h.turn}:</b> {h.event} | proj: {h.project}{' '}
+                  {h.guidanceBroken ? (
+                    <span style={{ color: 'crimson' }}>(guidance broken)</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: '#888' }}>No turns yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 30 }}>
         <LineChart
           title="XCR Floor, Total Mitigation (cumulative), Cumulative XCR Awarded"
           series={[
@@ -883,8 +960,11 @@ export default function HomePage() {
             { name: 'Cumulative XCR', color: '#d62728', points: xcrSeries },
           ]}
         />
-      </section>
+      </div>
+
+      <button onClick={nextTurn} style={{ marginTop: 20, padding: 10 }}>
+        ▶️ Next Turn
+      </button>
     </main>
   );
 }
-
