@@ -187,10 +187,6 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
-  // sync number input with state floor
-  useEffect(() => {
-    setNewFloor(simState.floor);
-  }, [simState.floor]);
 
   function handleCountryChange(e) {
     const code = e.target.value;
@@ -265,26 +261,35 @@ export default function HomePage() {
     if (!res.ok) return;
     const data = await res.json();
 
-    setSimState((prev) => ({
-      ...prev,
-      ...data,
-      floor: typeof data.floor === 'number' ? data.floor : prev.floor,
-      market: typeof data.market === 'number' ? data.market : prev.market,
-      inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
-      privateShare:
-        typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
-      sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
-      cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
-      totalMitigation:
-        typeof data.totalMitigation === 'number'
-          ? data.totalMitigation
-          : prev.totalMitigation,
-      credibility:
-        typeof data.credibility === 'number' ? data.credibility : prev.credibility,
-      history: Array.isArray(data.history) ? data.history : prev.history,
-      projects: Array.isArray(data.projects) ? data.projects : prev.projects,
-      members: Array.isArray(data.members) ? data.members : prev.members,
-    }));
+    let nextFloorValue;
+    setSimState((prev) => {
+      nextFloorValue =
+        typeof data.floor === 'number' ? data.floor : prev.floor;
+
+      return {
+        ...prev,
+        ...data,
+        floor: nextFloorValue,
+        market: typeof data.market === 'number' ? data.market : prev.market,
+        inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
+        privateShare:
+          typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
+        sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
+        cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
+        totalMitigation:
+          typeof data.totalMitigation === 'number'
+            ? data.totalMitigation
+            : prev.totalMitigation,
+        credibility:
+          typeof data.credibility === 'number' ? data.credibility : prev.credibility,
+        history: Array.isArray(data.history) ? data.history : prev.history,
+        projects: Array.isArray(data.projects) ? data.projects : prev.projects,
+        members: Array.isArray(data.members) ? data.members : prev.members,
+      };
+    });
+    if (typeof nextFloorValue === 'number') {
+      setNewFloor(nextFloorValue);
+    }
 
     setChosenProjectId(null);
     setFloorDecision('hold');
@@ -304,6 +309,7 @@ export default function HomePage() {
     if (res.ok) {
       const data = await res.json();
       setSimState((prev) => ({ ...prev, floor: data.floor }));
+      setNewFloor(data.floor);
     }
   }
 
