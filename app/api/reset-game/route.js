@@ -23,6 +23,7 @@ function defaultState() {
     credibility: 1.0,
     lastFloorChangeTurn: 0,
     floorStep: 5,
+    votes: [],
   };
 }
 

@@ -28,6 +28,122 @@ const COUNTRY_OPTIONS = [
   },
 ];
 
+const VOTE_LABELS = {
+  hold: 'Hold floor',
+  raise: 'Raise floor',
+  lower: 'Lower floor',
+};
+
+function formatTimeAgo(iso) {
+  if (!iso) return '—';
+  const timestamp = Date.parse(iso);
+  if (Number.isNaN(timestamp)) return '—';
+  const diffMs = Date.now() - timestamp;
+  if (!Number.isFinite(diffMs) || diffMs < 0) return 'just now';
+  const seconds = Math.floor(diffMs / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function VoteScoreboard({ votes = [], currentCountry }) {
+  const normalizedCurrent =
+    typeof currentCountry === 'string' ? currentCountry.trim().toUpperCase() : '';
+  const counts = votes.reduce(
+    (acc, v) => {
+      if (v && typeof v.vote === 'string' && acc[v.vote] !== undefined) {
+        acc[v.vote] += 1;
+      }
+      return acc;
+    },
+    { hold: 0, raise: 0, lower: 0 }
+  );
+
+  const sortedVotes = [...votes]
+    .filter((v) => v && typeof v.country === 'string')
+    .sort((a, b) => {
+      const aTime = Date.parse(a.updatedAt || 0) || 0;
+      const bTime = Date.parse(b.updatedAt || 0) || 0;
+      return bTime - aTime;
+    });
+
+  return (
+    <div
+      style={{
+        marginTop: 24,
+        marginBottom: 24,
+        padding: '16px 18px',
+        border: '1px solid #d9e5f6',
+        borderRadius: 8,
+        background: '#f4f9ff',
+      }}
+    >
+      <h3 style={{ margin: 0, marginBottom: 6 }}>CEA Vote Scoreboard</h3>
+      <p style={{ margin: '0 0 12px', color: '#4b6075', fontSize: 13 }}>
+        Live vote preferences from climate club members (auto-refreshes every few seconds).
+      </p>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 14 }}>
+        {Object.entries(VOTE_LABELS).map(([key, label]) => (
+          <div key={key} style={{ fontSize: 13 }}>
+            <span style={{ color: '#335', fontWeight: 600 }}>{label}:</span>{' '}
+            <span style={{ color: '#1f4a8a', fontVariantNumeric: 'tabular-nums' }}>
+              {counts[key] || 0}
+            </span>
+          </div>
+        ))}
+      </div>
+      {sortedVotes.length > 0 ? (
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr style={{ textAlign: 'left', color: '#37506a' }}>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Country</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Vote</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Turn</th>
+              <th style={{ padding: '6px 4px', borderBottom: '1px solid #c9d7eb' }}>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedVotes.map((entry) => {
+              const entryCountry =
+                typeof entry.country === 'string' ? entry.country.toUpperCase() : entry.country;
+              const isYou = normalizedCurrent && entryCountry === normalizedCurrent;
+              return (
+                <tr
+                  key={`${entryCountry}-${entry.updatedAt || 'now'}`}
+                  style={{
+                    background: isYou ? '#e3f1ff' : 'transparent',
+                    color: '#1f2d3d',
+                  }}
+                >
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5', fontWeight: isYou ? 600 : 500 }}>
+                    {entryCountry}
+                    {isYou ? ' (you)' : ''}
+                  </td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5' }}>
+                    {VOTE_LABELS[entry.vote] || entry.vote}
+                  </td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5' }}>
+                    {typeof entry.turn === 'number' ? entry.turn : '—'}
+                  </td>
+                  <td style={{ padding: '6px 4px', borderBottom: '1px solid #e2e9f5', color: '#4b6075' }}>
+                    {formatTimeAgo(entry.updatedAt)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      ) : (
+        <p style={{ color: '#6c7a89', margin: 0 }}>No votes recorded yet — be the first to weigh in.</p>
+      )}
+    </div>
+  );
+}
+
 // simple formatter
 function num(v, digits = 2) {
   if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(digits);
@@ -150,6 +266,7 @@ export default function HomePage() {
     history: [],
     members: [],
     credibility: 1.0,
+    votes: [],
   });
 
   const [selectedCountry, setSelectedCountry] = useState('USA');
@@ -177,20 +294,43 @@ export default function HomePage() {
     fetch('/api/join-club')
       .then((r) => r.json())
       .then((data) => {
-        if (data.members) {
-          setSimState((prev) => ({
-            ...prev,
-            members: data.members,
-          }));
-        }
+        setSimState((prev) => ({
+          ...prev,
+          members: Array.isArray(data.members) ? data.members : prev.members,
+          votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+        }));
       })
       .catch(() => {});
   }, []);
 
-  // sync number input with state floor
   useEffect(() => {
-    setNewFloor(simState.floor);
-  }, [simState.floor]);
+    let cancelled = false;
+    let intervalId;
+
+    async function loadVotes() {
+      try {
+        const res = await fetch('/api/votes', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setSimState((prev) => ({
+          ...prev,
+          votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+        }));
+      } catch {
+        // ignore network errors
+      }
+    }
+
+    const intervalMs = inClimateClub ? 4000 : 8000;
+    loadVotes();
+    intervalId = setInterval(loadVotes, intervalMs);
+
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [inClimateClub]);
 
   function handleCountryChange(e) {
     const code = e.target.value;
@@ -232,7 +372,30 @@ export default function HomePage() {
     setErrorMsg('');
 
     if (wantReset) {
-      await fetch('/api/reset-game', { method: 'POST' }).catch(() => {});
+      await fetch('/api/reset-game', { method: 'POST' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.floor === 'number') {
+            setNewFloor(data.floor);
+            setSimState((prev) => ({
+              ...prev,
+              floor: data.floor,
+              market: typeof data.market === 'number' ? data.market : prev.market,
+              turn: typeof data.turn === 'number' ? data.turn : prev.turn,
+              history: Array.isArray(data.history) ? data.history : prev.history,
+              projects: Array.isArray(data.projects) ? data.projects : prev.projects,
+              members: Array.isArray(data.members) ? data.members : prev.members,
+              votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+              totalMitigation:
+                typeof data.totalMitigation === 'number'
+                  ? data.totalMitigation
+                  : prev.totalMitigation,
+              credibility:
+                typeof data.credibility === 'number' ? data.credibility : prev.credibility,
+            }));
+          }
+        })
+        .catch(() => {});
     }
 
     setInClimateClub(true);
@@ -245,7 +408,11 @@ export default function HomePage() {
 
     const res = await fetch('/api/join-club');
     const data = await res.json();
-    setSimState((prev) => ({ ...prev, members: data.members || [] }));
+    setSimState((prev) => ({
+      ...prev,
+      members: Array.isArray(data.members) ? data.members : prev.members,
+      votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+    }));
   }
 
   async function nextTurn() {
@@ -265,26 +432,35 @@ export default function HomePage() {
     if (!res.ok) return;
     const data = await res.json();
 
-    setSimState((prev) => ({
-      ...prev,
-      ...data,
-      floor: typeof data.floor === 'number' ? data.floor : prev.floor,
-      market: typeof data.market === 'number' ? data.market : prev.market,
-      inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
-      privateShare:
-        typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
-      sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
-      cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
-      totalMitigation:
-        typeof data.totalMitigation === 'number'
-          ? data.totalMitigation
-          : prev.totalMitigation,
-      credibility:
-        typeof data.credibility === 'number' ? data.credibility : prev.credibility,
-      history: Array.isArray(data.history) ? data.history : prev.history,
-      projects: Array.isArray(data.projects) ? data.projects : prev.projects,
-      members: Array.isArray(data.members) ? data.members : prev.members,
-    }));
+    let nextFloorValue = simState.floor;
+    setSimState((prev) => {
+      const computedFloor =
+        typeof data.floor === 'number' ? data.floor : prev.floor;
+      nextFloorValue = computedFloor;
+      return {
+        ...prev,
+        ...data,
+        floor: computedFloor,
+        market: typeof data.market === 'number' ? data.market : prev.market,
+        inflation: typeof data.inflation === 'number' ? data.inflation : prev.inflation,
+        privateShare:
+          typeof data.privateShare === 'number' ? data.privateShare : prev.privateShare,
+        sentiment: typeof data.sentiment === 'number' ? data.sentiment : prev.sentiment,
+        cqeBuy: typeof data.cqeBuy === 'number' ? data.cqeBuy : prev.cqeBuy,
+        totalMitigation:
+          typeof data.totalMitigation === 'number'
+            ? data.totalMitigation
+            : prev.totalMitigation,
+        credibility:
+          typeof data.credibility === 'number' ? data.credibility : prev.credibility,
+        history: Array.isArray(data.history) ? data.history : prev.history,
+        projects: Array.isArray(data.projects) ? data.projects : prev.projects,
+        members: Array.isArray(data.members) ? data.members : prev.members,
+        votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+      };
+    });
+
+    setNewFloor(nextFloorValue);
 
     setChosenProjectId(null);
     setFloorDecision('hold');
@@ -304,6 +480,51 @@ export default function HomePage() {
     if (res.ok) {
       const data = await res.json();
       setSimState((prev) => ({ ...prev, floor: data.floor }));
+      setNewFloor(data.floor);
+    }
+  }
+
+  async function submitVote(choice) {
+    setFloorDecision(choice);
+    if (!inClimateClub) return;
+
+    const playerCountry = selectedCountry;
+    if (!playerCountry) return;
+    const currentTurn = simState.turn || 1;
+    const optimisticTimestamp = new Date().toISOString();
+
+    setSimState((prev) => {
+      const existingVotes = Array.isArray(prev.votes) ? prev.votes : [];
+      const withoutPlayer = existingVotes.filter((v) => v.country !== playerCountry);
+      return {
+        ...prev,
+        votes: [
+          ...withoutPlayer,
+          {
+            country: playerCountry,
+            vote: choice,
+            updatedAt: optimisticTimestamp,
+            turn: currentTurn,
+          },
+        ],
+      };
+    });
+
+    try {
+      const res = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: playerCountry, vote: choice, turn: currentTurn }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSimState((prev) => ({
+          ...prev,
+          votes: Array.isArray(data.votes) ? data.votes : prev.votes,
+        }));
+      }
+    } catch {
+      // ignore network failure; polling will resync
     }
   }
 
@@ -411,6 +632,11 @@ export default function HomePage() {
             <p style={{ color: '#888' }}>No members yet.</p>
           )}
         </div>
+
+        <VoteScoreboard
+          votes={Array.isArray(simState.votes) ? simState.votes : []}
+          currentCountry={selectedCountry}
+        />
 
         {showMouModal ? (
           <div
@@ -541,6 +767,16 @@ export default function HomePage() {
           }}
         >
           <strong>Event this turn:</strong> {simState.lastEvent.title}
+          {simState.lastEvent.occurredAt ? (
+            <span style={{ marginLeft: 8, color: '#3f6d5c', fontSize: 12 }}>
+              ({formatTimeAgo(simState.lastEvent.occurredAt)})
+            </span>
+          ) : null}
+          {simState.lastEvent.justified ? (
+            <span style={{ marginLeft: 6, color: '#1f5f4f', fontSize: 12 }}>
+              – justification allows floor changes
+            </span>
+          ) : null}
         </div>
       ) : (
         <p style={{ color: '#888' }}>No event yet — click “Next Turn”.</p>
@@ -579,6 +815,11 @@ export default function HomePage() {
         )}
       </div>
 
+      <VoteScoreboard
+        votes={Array.isArray(simState.votes) ? simState.votes : []}
+        currentCountry={selectedCountry}
+      />
+
       {/* floor decision */}
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ marginBottom: 6 }}>Floor decision</h2>
@@ -591,7 +832,7 @@ export default function HomePage() {
             name="floor"
             value="hold"
             checked={floorDecision === 'hold'}
-            onChange={() => setFloorDecision('hold')}
+            onChange={() => submitVote('hold')}
           />{' '}
           Hold
         </label>
@@ -601,7 +842,7 @@ export default function HomePage() {
             name="floor"
             value="raise"
             checked={floorDecision === 'raise'}
-            onChange={() => setFloorDecision('raise')}
+            onChange={() => submitVote('raise')}
           />{' '}
           Raise
         </label>
@@ -611,7 +852,7 @@ export default function HomePage() {
             name="floor"
             value="lower"
             checked={floorDecision === 'lower'}
-            onChange={() => setFloorDecision('lower')}
+            onChange={() => submitVote('lower')}
           />{' '}
           Lower
         </label>

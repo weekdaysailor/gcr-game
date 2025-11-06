@@ -96,7 +96,7 @@ async function loadGameState() {
   try {
     const data = await fs.readFile(GAME_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch (e) {
+  } catch {
     return {
       turn: 1,
       floor: 80,
@@ -113,6 +113,7 @@ async function loadGameState() {
       credibility: 1.0,
       lastFloorChangeTurn: 0,
       floorStep: 5,
+      votes: [],
     };
   }
 }
@@ -126,6 +127,7 @@ export async function POST(request) {
   const { chosenProjectId, floorDecision, playerCountry } = clientState;
 
   let state = await loadGameState();
+  state.votes = Array.isArray(state.votes) ? state.votes : [];
 
   // start of turn
   state.incomingSupply = 0;
@@ -159,6 +161,12 @@ export async function POST(request) {
   // 2) event
   const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
   state = event.effect(state);
+  state.lastEvent = {
+    id: event.id,
+    title: event.title,
+    justified: event.justified === true,
+    occurredAt: new Date().toISOString(),
+  };
 
   // 3) clamp to client view to stop wild jumps
   const prevSentiment = clientState.sentiment ?? 0;
