@@ -16,6 +16,8 @@ const PROJECT_LIBRARY = [
     sentimentEffect: 0.02,
     bidPriceRange: [95, 135],
     bidMitigationRange: [0.85, 1.15],
+    coBenefits:
+      'Supports local clean-tech employment and yields research spillovers for carbon removal.',
   },
   {
     id: 'proj-methane',
@@ -25,6 +27,8 @@ const PROJECT_LIBRARY = [
     sentimentEffect: 0.03,
     bidPriceRange: [60, 95],
     bidMitigationRange: [0.9, 1.2],
+    coBenefits:
+      'Improves air quality for nearby communities and captures landfill gas for on-site energy.',
   },
   {
     id: 'proj-mangroves',
@@ -34,6 +38,8 @@ const PROJECT_LIBRARY = [
     sentimentEffect: 0.04,
     bidPriceRange: [55, 90],
     bidMitigationRange: [0.8, 1.25],
+    coBenefits:
+      'Enhances coastal resilience, protects fisheries, and improves biodiversity outcomes.',
   },
 ];
 
@@ -123,6 +129,7 @@ function generateProjects() {
       xcrBidPrice: bidPrice,
       bidMitigationTonnes,
       baselineMitigationTonnes: baselineMitigation,
+      coBenefits: base.coBenefits || 'No additional co-benefits were provided.',
     };
   });
 }
@@ -130,8 +137,29 @@ function generateProjects() {
 async function loadGameState() {
   try {
     const data = await fs.readFile(GAME_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
+    const state = JSON.parse(data);
+    if (!Array.isArray(state.projects) || state.projects.length === 0) {
+      state.projects = generateProjects();
+    }
+    state.projects = state.projects.map((proj) => {
+      const libraryMatch = PROJECT_LIBRARY.find((p) => p.id === proj.id);
+      return {
+        ...proj,
+        coBenefits:
+          proj.coBenefits || libraryMatch?.coBenefits || 'No additional co-benefits were provided.',
+        xcrBidPrice:
+          typeof proj.xcrBidPrice === 'number'
+            ? proj.xcrBidPrice
+            : libraryMatch?.bidPriceRange
+            ? Number(randomInRange(...libraryMatch.bidPriceRange).toFixed(2))
+            : null,
+      };
+    });
+    if (typeof state.floorStep !== 'number' || Number.isNaN(state.floorStep) || state.floorStep <= 0) {
+      state.floorStep = 5;
+    }
+    return state;
+  } catch {
     return {
       turn: 1,
       floor: 80,

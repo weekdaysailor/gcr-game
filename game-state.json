@@ -14,21 +14,33 @@
       "name": "Landfill Methane Oxidation",
       "mitigationTonnes": 500000,
       "supplyPressure": 300000,
-      "sentimentEffect": 0.03
+      "sentimentEffect": 0.03,
+      "xcrBidPrice": 78.5,
+      "bidMitigationTonnes": 500000,
+      "baselineMitigationTonnes": 500000,
+      "coBenefits": "Improves air quality for nearby communities and captures landfill gas for on-site energy."
     },
     {
       "id": "proj-mangroves",
       "name": "Mangrove Restoration Programme",
       "mitigationTonnes": 600000,
       "supplyPressure": 200000,
-      "sentimentEffect": 0.04
+      "sentimentEffect": 0.04,
+      "xcrBidPrice": 72.1,
+      "bidMitigationTonnes": 600000,
+      "baselineMitigationTonnes": 600000,
+      "coBenefits": "Enhances coastal resilience, protects fisheries, and improves biodiversity outcomes."
     },
     {
       "id": "proj-dac",
       "name": "Direct Air Capture Plant",
       "mitigationTonnes": 968000,
       "supplyPressure": 648000,
-      "sentimentEffect": 0.02
+      "sentimentEffect": 0.02,
+      "xcrBidPrice": 118.4,
+      "bidMitigationTonnes": 968000,
+      "baselineMitigationTonnes": 968000,
+      "coBenefits": "Supports local clean-tech employment and yields research spillovers for carbon removal."
     }
   ],
   "history": [

@@ -10,7 +10,7 @@ async function loadGameState() {
   try {
     const data = await fs.readFile(GAME_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch (e) {
+  } catch {
     return {
       turn: 1,
       floor: 80,
