@@ -161,9 +161,17 @@ export default function HomePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [chosenProjectId, setChosenProjectId] = useState(null);
   const [floorDecision, setFloorDecision] = useState('hold');
+  const [projectDetail, setProjectDetail] = useState(null);
 
   // manual floor setter
-  const [newFloor, setNewFloor] = useState(80);
+  const [newFloor, setNewFloor] = useState('80');
+
+  const panelStyle = {
+    border: '1px solid #dfe3e8',
+    borderRadius: 8,
+    background: '#fff',
+    padding: '12px 14px',
+  };
 
   // onboarding extras
   const [wantReset, setWantReset] = useState(false);
@@ -186,11 +194,6 @@ export default function HomePage() {
       })
       .catch(() => {});
   }, []);
-
-  // sync number input with state floor
-  useEffect(() => {
-    setNewFloor(simState.floor);
-  }, [simState.floor]);
 
   function handleCountryChange(e) {
     const code = e.target.value;
@@ -286,6 +289,10 @@ export default function HomePage() {
       members: Array.isArray(data.members) ? data.members : prev.members,
     }));
 
+    if (typeof data.floor === 'number') {
+      setNewFloor(data.floor.toString());
+    }
+
     setChosenProjectId(null);
     setFloorDecision('hold');
   }
@@ -304,7 +311,19 @@ export default function HomePage() {
     if (res.ok) {
       const data = await res.json();
       setSimState((prev) => ({ ...prev, floor: data.floor }));
+      if (typeof data.floor === 'number') {
+        setNewFloor(data.floor.toString());
+      }
     }
+  }
+
+  function openProjectDetails(project) {
+    if (!project) return;
+    setProjectDetail(project);
+  }
+
+  function closeProjectDetails() {
+    setProjectDetail(null);
   }
 
   // if not in club, show onboarding
@@ -510,204 +529,393 @@ export default function HomePage() {
     xcrSeries.push({ x: turn, y: cumulativeXcr });
   });
 
+  if (!xcrSeries.some((point) => point.x === 0)) {
+    xcrSeries.unshift({ x: 0, y: 0 });
+  }
+  if (!mitigationSeries.some((point) => point.x === 0)) {
+    mitigationSeries.unshift({ x: 0, y: 0 });
+  }
+
   return (
-    <main style={{ fontFamily: 'sans-serif', padding: 40, maxWidth: 1100 }}>
+    <main
+      style={{
+        fontFamily: 'sans-serif',
+        padding: '24px 32px 40px',
+        maxWidth: 1040,
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 18,
+      }}
+    >
       <h1>🌍 CEA Simulation</h1>
       <p style={{ color: '#2e6f4e' }}>
         Playing as: <b>{selectedCountry}</b>
       </p>
 
-      <div style={{ marginBottom: 20 }}>
-        <h3>Climate Club Members</h3>
-        {simState.members && simState.members.length > 0 ? (
-          <ul>
-            {simState.members.map((m) => (
-              <li key={m.country}>{m.country}</li>
-            ))}
-          </ul>
-        ) : (
-          <p style={{ color: '#888' }}>No other members yet.</p>
-        )}
-      </div>
-
-      {simState.lastEvent ? (
+      <section
+        style={{
+          ...panelStyle,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+        }}
+      >
         <div
           style={{
-            background: '#e6f5f0',
-            border: '1px solid #b6ddd1',
-            padding: '10px 14px',
-            marginBottom: '20px',
-            borderRadius: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
           }}
         >
-          <strong>Event this turn:</strong> {simState.lastEvent.title}
+          <h3 style={{ margin: 0, fontSize: 16 }}>Climate Club Members</h3>
+          <span style={{ fontSize: 12, color: '#5c6570' }}>
+            Total: {simState.members ? simState.members.length : 0}
+          </span>
         </div>
+        {simState.members && simState.members.length > 0 ? (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
+            {simState.members.map((m) => (
+              <span
+                key={m.country}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 999,
+                  background: '#f1f4f8',
+                  fontSize: 12,
+                }}
+              >
+                {m.country}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p style={{ color: '#888', margin: 0, fontSize: 13 }}>No other members yet.</p>
+        )}
+      </section>
+
+      {simState.lastEvent ? (
+        <section
+          style={{
+            ...panelStyle,
+            borderColor: '#b6ddd1',
+            background: '#e9f7f2',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <strong style={{ fontSize: 14 }}>Event this turn:</strong>
+          <span style={{ fontSize: 14 }}>{simState.lastEvent.title}</span>
+        </section>
       ) : (
-        <p style={{ color: '#888' }}>No event yet — click “Next Turn”.</p>
+        <p style={{ color: '#888', margin: 0 }}>No event yet — click “Next Turn”.</p>
       )}
 
       {/* project choices */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ marginBottom: 6 }}>Project proposals this turn</h2>
-        {simState.projects && simState.projects.length > 0 ? (
-          simState.projects.map((proj) => (
-            <label
-              key={proj.id}
-              style={{
-                display: 'block',
-                border: '1px solid #ddd',
-                borderRadius: 6,
-                padding: '8px 10px',
-                marginBottom: 8,
-                background: chosenProjectId === proj.id ? '#f0f7ff' : '#fff',
-                cursor: 'pointer',
-              }}
-            >
-              <input
-                type="radio"
-                name="project"
-                value={proj.id}
-                checked={chosenProjectId === proj.id}
-                onChange={() => setChosenProjectId(proj.id)}
-                style={{ marginRight: 8 }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <b>{proj.name}</b>
-                <span style={{ fontSize: 13, color: '#333' }}>
-                  Bid price:{' '}
-                  {typeof proj.xcrBidPrice === 'number'
-                    ? `$${num(proj.xcrBidPrice)}/tCO₂e`
-                    : 'N/A'}
-                </span>
-                <span style={{ fontSize: 13, color: '#333' }}>
-                  Bid mitigation:{' '}
-                  {typeof proj.bidMitigationTonnes === 'number'
-                    ? `${proj.bidMitigationTonnes.toLocaleString()} tCO₂e`
-                    : 'N/A'}
-                </span>
-              </div>
-            </label>
-          ))
-        ) : (
-          <p style={{ color: '#888' }}>No projects loaded yet. Click Next Turn.</p>
-        )}
-      </div>
-
-      {/* floor decision */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ marginBottom: 6 }}>Floor decision</h2>
-        <p style={{ color: '#666', marginBottom: 6 }}>
-          You can only change the floor every few turns unless the event justifies it.
-        </p>
-        <label style={{ marginRight: 12 }}>
-          <input
-            type="radio"
-            name="floor"
-            value="hold"
-            checked={floorDecision === 'hold'}
-            onChange={() => setFloorDecision('hold')}
-          />{' '}
-          Hold
-        </label>
-        <label style={{ marginRight: 12 }}>
-          <input
-            type="radio"
-            name="floor"
-            value="raise"
-            checked={floorDecision === 'raise'}
-            onChange={() => setFloorDecision('raise')}
-          />{' '}
-          Raise
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="floor"
-            value="lower"
-            checked={floorDecision === 'lower'}
-            onChange={() => setFloorDecision('lower')}
-          />{' '}
-          Lower
-        </label>
-      </div>
-
-      {/* direct floor setter */}
-      <div
+      <section
         style={{
-          marginBottom: 20,
-          padding: '12px 16px',
-          border: '1px solid #e1e1e1',
-          borderRadius: 6,
-          background: '#f9fafb',
+          ...panelStyle,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
         }}
       >
-        <h3 style={{ marginTop: 0 }}>Admin: Set XCR Price Floor (no voting)</h3>
-        <p style={{ color: '#666', fontSize: 13 }}>
-          For now, whichever user sets the floor wins. Later this can be guarded by a voting rule.
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 18 }}>Project proposals this turn</h2>
+          <span style={{ fontSize: 12, color: '#5c6570' }}>
+            Select one to fund or continue without a project.
+          </span>
+        </div>
+        {simState.projects && simState.projects.length > 0 ? (
+          simState.projects.map((proj) => {
+            const inputId = `project-${proj.id}`;
+            const coBenefitsPreview = proj.coBenefits
+              ? proj.coBenefits.length > 120
+                ? `${proj.coBenefits.slice(0, 120)}…`
+                : proj.coBenefits
+              : 'No co-benefits listed yet.';
+            return (
+              <div
+                key={proj.id}
+                onClick={() => setChosenProjectId(proj.id)}
+                style={{
+                  border: '1px solid',
+                  borderColor: chosenProjectId === proj.id ? '#2f6ad9' : '#d9dfe7',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  background: chosenProjectId === proj.id ? '#f3f7ff' : '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <input
+                    type="radio"
+                    id={inputId}
+                    name="project"
+                    value={proj.id}
+                    checked={chosenProjectId === proj.id}
+                    onChange={() => setChosenProjectId(proj.id)}
+                    style={{ marginTop: 4 }}
+                  />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <label
+                        htmlFor={inputId}
+                        style={{
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          fontSize: 15,
+                        }}
+                      >
+                        {proj.name}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          openProjectDetails(proj);
+                        }}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          color: '#1f4ed9',
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          padding: 0,
+                        }}
+                      >
+                        View details
+                      </button>
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                        gap: 8,
+                        fontSize: 12,
+                        color: '#2f3946',
+                      }}
+                    >
+                      <div>
+                        <span style={{ display: 'block', color: '#728097' }}>XCR bid price</span>
+                        <strong>
+                          {typeof proj.xcrBidPrice === 'number'
+                            ? `$${num(proj.xcrBidPrice)}/tCO₂e`
+                            : 'Pending'}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ display: 'block', color: '#728097' }}>
+                          Mitigation offered
+                        </span>
+                        <strong>
+                          {typeof proj.bidMitigationTonnes === 'number'
+                            ? `${proj.bidMitigationTonnes.toLocaleString()} tCO₂e`
+                            : 'Pending'}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ display: 'block', color: '#728097' }}>Baseline potential</span>
+                        <strong>
+                          {typeof proj.baselineMitigationTonnes === 'number'
+                            ? `${proj.baselineMitigationTonnes.toLocaleString()} tCO₂e`
+                            : 'Unknown'}
+                        </strong>
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: 12, color: '#4a5568' }}>
+                      <span style={{ fontWeight: 600 }}>Co-benefits:</span> {coBenefitsPreview}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p style={{ color: '#888', margin: 0 }}>No projects loaded yet. Click Next Turn.</p>
+        )}
+      </section>
+
+      {/* floor decision */}
+      <section
+        style={{
+          ...panelStyle,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 18 }}>Floor decision</h2>
+        <p style={{ color: '#5a6573', margin: 0, fontSize: 13 }}>
+          You can only change the floor every few turns unless the current event justifies it.
         </p>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 14 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="radio"
+              name="floor"
+              value="hold"
+              checked={floorDecision === 'hold'}
+              onChange={() => setFloorDecision('hold')}
+            />
+            Hold
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="radio"
+              name="floor"
+              value="raise"
+              checked={floorDecision === 'raise'}
+              onChange={() => setFloorDecision('raise')}
+            />
+            Raise
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="radio"
+              name="floor"
+              value="lower"
+              checked={floorDecision === 'lower'}
+              onChange={() => setFloorDecision('lower')}
+            />
+            Lower
+          </label>
+        </div>
+      </section>
+
+      {/* direct floor setter */}
+      <section
+        style={{
+          ...panelStyle,
+          background: '#f7f9fc',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
+        <h3 style={{ margin: 0, fontSize: 16 }}>Admin: Set XCR Price Floor (no voting)</h3>
+        <p style={{ color: '#5a6573', fontSize: 13, margin: 0 }}>
+          Manual override for now — in a later version this will be guarded by a voting rule.
+        </p>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: 14 }}>
             New floor ($/t):{' '}
             <input
               type="number"
               value={newFloor}
               onChange={(e) => setNewFloor(e.target.value)}
-              style={{ width: 100 }}
+              style={{ width: 90 }}
               min={10}
             />
           </label>
-          <button onClick={setFloorNow} style={{ padding: '6px 12px' }}>
+          <button onClick={setFloorNow} style={{ padding: '6px 12px', fontSize: 13 }}>
             💾 Set floor now
           </button>
-          <span style={{ color: '#555' }}>
+          <span style={{ color: '#49525f', fontSize: 13 }}>
             Current floor: <b>${num(simState.floor)}</b>/t
           </span>
         </div>
-      </div>
+      </section>
 
-      <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
-        <div>
-          <p>
-            <b>Turn:</b> {simState.turn || 1}
-          </p>
-          <p>
-            <b>Floor:</b> ${num(simState.floor)}/t
-          </p>
-          <p>
-            <b>Market:</b> ${num(simState.market)}/t
-          </p>
-          <p>
-            <b>Inflation:</b> {num(simState.inflation)}%
-          </p>
-          <p>
-            <b>Private Capital Share:</b>{' '}
-            {typeof simState.privateShare === 'number'
-              ? (simState.privateShare * 100).toFixed(1)
-              : '0.0'}
-            %
-          </p>
-          <p>
-            <b>CQE Purchases:</b> {num(simState.cqeBuy)}
-          </p>
-          <p>
-            <b>Credibility:</b> {num(simState.credibility)}
-          </p>
-          <p>
-            <b>Total Mitigation (all time):</b>{' '}
-            {typeof simState.totalMitigation === 'number'
-              ? (simState.totalMitigation / 1_000_000).toFixed(2)
-              : '0.00'}{' '}
-            MtCO₂e
-          </p>
+      <section
+        style={{
+          display: 'grid',
+          gap: 16,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        }}
+      >
+        <div style={{ ...panelStyle, display: 'grid', gap: 6, fontSize: 13, color: '#2f3946' }}>
+          <h3 style={{ margin: 0, fontSize: 16 }}>Key indicators</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6 }}>
+            <span>
+              <strong>Turn</strong>
+              <br />
+              {simState.turn || 1}
+            </span>
+            <span>
+              <strong>Floor</strong>
+              <br />${num(simState.floor)}/t
+            </span>
+            <span>
+              <strong>Market</strong>
+              <br />${num(simState.market)}/t
+            </span>
+            <span>
+              <strong>Inflation</strong>
+              <br />{num(simState.inflation)}%
+            </span>
+            <span>
+              <strong>Private share</strong>
+              <br />
+              {typeof simState.privateShare === 'number'
+                ? `${(simState.privateShare * 100).toFixed(1)}%`
+                : '0.0%'}
+            </span>
+            <span>
+              <strong>CQE purchases</strong>
+              <br />{num(simState.cqeBuy)}
+            </span>
+            <span>
+              <strong>Credibility</strong>
+              <br />{num(simState.credibility)}
+            </span>
+            <span>
+              <strong>Total mitigation</strong>
+              <br />
+              {typeof simState.totalMitigation === 'number'
+                ? `${(simState.totalMitigation / 1_000_000).toFixed(2)} Mt`
+                : '0.00 Mt'}
+            </span>
+          </div>
         </div>
 
-        <div style={{ minWidth: 300 }}>
-          <h3>Turn History</h3>
+        <div
+          style={{
+            ...panelStyle,
+            minHeight: 220,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: 16 }}>Turn History</h3>
           {simState.history && simState.history.length > 0 ? (
-            <ul style={{ maxHeight: 200, overflowY: 'auto', paddingLeft: 18 }}>
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: 18,
+                maxHeight: 200,
+                overflowY: 'auto',
+                fontSize: 12,
+                color: '#2f3946',
+              }}
+            >
               {simState.history.map((h) => (
-                <li key={h.time}>
-                  <b>Turn {h.turn}:</b> {h.event}{' '}
+                <li key={h.time} style={{ marginBottom: 6 }}>
+                  <strong>Turn {h.turn}:</strong> {h.event}{' '}
                   {h.project && h.project !== 'none' ? (
                     <>
                       | proj: {h.projectName || h.project}
@@ -728,12 +936,12 @@ export default function HomePage() {
               ))}
             </ul>
           ) : (
-            <p style={{ color: '#888' }}>No turns yet.</p>
+            <p style={{ color: '#888', fontSize: 13, margin: 0 }}>No turns yet.</p>
           )}
         </div>
-      </div>
+      </section>
 
-      <div style={{ marginTop: 30 }}>
+      <section style={{ ...panelStyle }}>
         <LineChart
           title="XCR Floor, Total Mitigation (cumulative), Cumulative XCR Awarded"
           series={[
@@ -746,11 +954,113 @@ export default function HomePage() {
             { name: 'Cumulative XCR', color: '#d62728', points: xcrSeries },
           ]}
         />
-      </div>
+      </section>
 
-      <button onClick={nextTurn} style={{ marginTop: 20, padding: 10 }}>
+      <button
+        onClick={nextTurn}
+        style={{ alignSelf: 'flex-start', marginTop: 4, padding: '9px 14px', fontSize: 14 }}
+      >
         ▶️ Next Turn
       </button>
+
+      {projectDetail ? (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2200,
+            padding: 16,
+          }}
+          role="presentation"
+          onClick={closeProjectDetails}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              width: 'min(90vw, 520px)',
+              borderRadius: 10,
+              boxShadow: '0 16px 40px rgba(15, 23, 42, 0.25)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid #e5e9f0' }}>
+              <h2 style={{ margin: 0, fontSize: 18 }}>{projectDetail.name}</h2>
+            </div>
+            <div
+              style={{
+                padding: '16px 18px',
+                display: 'grid',
+                gap: 12,
+                fontSize: 13,
+                color: '#2f3946',
+              }}
+            >
+              <div>
+                <strong>Bid price:</strong>{' '}
+                {typeof projectDetail.xcrBidPrice === 'number'
+                  ? `$${num(projectDetail.xcrBidPrice)}/tCO₂e`
+                  : 'Pending'}
+              </div>
+              <div>
+                <strong>Mitigation offered:</strong>{' '}
+                {typeof projectDetail.bidMitigationTonnes === 'number'
+                  ? `${projectDetail.bidMitigationTonnes.toLocaleString()} tCO₂e`
+                  : 'Pending'}
+              </div>
+              <div>
+                <strong>Baseline potential:</strong>{' '}
+                {typeof projectDetail.baselineMitigationTonnes === 'number'
+                  ? `${projectDetail.baselineMitigationTonnes.toLocaleString()} tCO₂e`
+                  : 'Unknown'}
+              </div>
+              <div>
+                <strong>Supply pressure:</strong>{' '}
+                {typeof projectDetail.supplyPressure === 'number'
+                  ? `${projectDetail.supplyPressure.toLocaleString()} tCO₂e`
+                  : 'Not specified'}
+              </div>
+              <div>
+                <strong>Sentiment effect:</strong>{' '}
+                {typeof projectDetail.sentimentEffect === 'number'
+                  ? `${(projectDetail.sentimentEffect * 100).toFixed(2)}%`
+                  : 'Not specified'}
+              </div>
+              <div>
+                <strong>Co-benefits:</strong>
+                <p style={{ margin: '6px 0 0', lineHeight: 1.4 }}>
+                  {projectDetail.coBenefits || 'No co-benefits listed yet.'}
+                </p>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '12px 18px',
+                borderTop: '1px solid #e5e9f0',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={closeProjectDetails}
+                style={{ padding: '6px 12px', fontSize: 13 }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
