@@ -280,6 +280,116 @@ textarea {
   margin-top: 4px;
 }
 
+.project-browser {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) 1fr;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.project-browser__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-browser__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #d5e1f2;
+  background: #f5f8ff;
+  color: inherit;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.project-browser__item:hover {
+  border-color: #2c5bd9;
+}
+
+.project-browser__item.is-active {
+  border-color: #2c5bd9;
+  background: #eef3ff;
+  box-shadow: 0 6px 16px rgba(34, 91, 217, 0.18);
+}
+
+.project-browser__item.is-chosen {
+  border-color: #1f8a4d;
+  background: #eefcf3;
+  box-shadow: 0 0 0 2px rgba(31, 138, 77, 0.18);
+}
+
+.project-browser__name {
+  flex: 1;
+  text-align: left;
+}
+
+.project-browser__meta {
+  font-size: 0.85rem;
+  color: #425871;
+  font-weight: 500;
+  margin-left: 12px;
+}
+
+.project-browser__details {
+  border: 1px solid #dfe7f5;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fdfdff;
+}
+
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.project-form__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.project-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.project-form__field span {
+  font-weight: 600;
+  color: #1e3353;
+}
+
+.project-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.project-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .project-browser {
+    grid-template-columns: 1fr;
+  }
+
+  .project-browser__details {
+    order: 2;
+  }
+}
+
 .input-compact {
   width: 110px;
 }

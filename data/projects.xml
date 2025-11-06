@@ -1,0 +1,35 @@
+<projects>
+  <project>
+    <id>proj-dac</id>
+    <name>Direct Air Capture Plant</name>
+    <description>Deploy a modular DAC facility capable of scaling with learning-by-doing cost reductions.</description>
+    <coBenefits>High-quality jobs in clean technology manufacturing hubs.</coBenefits>
+    <xcrBid>950000</xcrBid>
+    <co2eMitigation>800000</co2eMitigation>
+    <supplyPressure>800000</supplyPressure>
+    <sentimentEffect>0.02</sentimentEffect>
+    <insuranceBuffer>12</insuranceBuffer>
+  </project>
+  <project>
+    <id>proj-methane</id>
+    <name>Landfill Methane Oxidation</name>
+    <description>Install modular oxidation covers for legacy landfills across multiple municipalities.</description>
+    <coBenefits>Improved local air quality and odor control for surrounding communities.</coBenefits>
+    <xcrBid>420000</xcrBid>
+    <co2eMitigation>500000</co2eMitigation>
+    <supplyPressure>300000</supplyPressure>
+    <sentimentEffect>0.03</sentimentEffect>
+    <insuranceBuffer>8</insuranceBuffer>
+  </project>
+  <project>
+    <id>proj-mangroves</id>
+    <name>Mangrove Restoration Programme</name>
+    <description>Restore and protect coastal mangrove ecosystems with community stewardship.</description>
+    <coBenefits>Storm surge protection and fisheries habitat co-benefits for coastal residents.</coBenefits>
+    <xcrBid>360000</xcrBid>
+    <co2eMitigation>600000</co2eMitigation>
+    <supplyPressure>200000</supplyPressure>
+    <sentimentEffect>0.04</sentimentEffect>
+    <insuranceBuffer>5</insuranceBuffer>
+  </project>
+</projects>

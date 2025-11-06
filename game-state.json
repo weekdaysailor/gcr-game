@@ -8,29 +8,7 @@
   "cqeBuy": 0.6691799999999971,
   "totalMitigation": 1064800,
   "lastEvent": null,
-  "projects": [
-    {
-      "id": "proj-methane",
-      "name": "Landfill Methane Oxidation",
-      "mitigationTonnes": 500000,
-      "supplyPressure": 300000,
-      "sentimentEffect": 0.03
-    },
-    {
-      "id": "proj-dac",
-      "name": "Direct Air Capture Plant",
-      "mitigationTonnes": 1064800,
-      "supplyPressure": 583200,
-      "sentimentEffect": 0.02
-    },
-    {
-      "id": "proj-mangroves",
-      "name": "Mangrove Restoration Programme",
-      "mitigationTonnes": 600000,
-      "supplyPressure": 200000,
-      "sentimentEffect": 0.04
-    }
-  ],
+  "projects": [],
   "history": [
     {
       "turn": 7,
