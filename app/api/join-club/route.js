@@ -1,6 +1,7 @@
 // app/api/join-club/route.js
 import { promises as fs } from 'fs';
 import path from 'path';
+import { recalculateWeights } from '../../../lib/gdpWeighting';
 
 export const dynamic = 'force-dynamic';
 const GAME_FILE = path.join(process.cwd(), 'game-state.json');
@@ -38,9 +39,14 @@ export async function POST(request) {
   state.members = state.members || [];
   state.votes = Array.isArray(state.votes) ? state.votes : [];
 
-  if (!state.members.find((m) => m.country === country)) {
+  const isNewMember = !state.members.find((m) => m.country === country);
+
+  if (isNewMember) {
     state.members.push({ country, joinedAt: new Date().toISOString() });
   }
+
+  // Recalculate GDP weights whenever membership changes
+  await recalculateWeights(state);
 
   await saveGameState(state);
 

@@ -1,109 +1,165 @@
 {
-  "turn": 8,
+  "turn": 4,
+  "year": 2025,
+  "quarter": 4,
+  "phase": 1,
+  "isAnnualAnchor": true,
   "floor": 80,
   "market": 80,
-  "inflation": 1.1556691799999999,
-  "privateShare": 0.6432866164,
-  "sentiment": 0.18000000000000002,
-  "cqeBuy": 0.6691799999999971,
-  "totalMitigation": 1064800,
-  "lastEvent": null,
-  "projects": [],
+  "inflation": 1.12564701587314,
+  "privateShare": 0.6726786694825372,
+  "sentiment": 0.26,
+  "cqeBuy": 0.22750587314000095,
+  "totalMitigation": 900000,
+  "lastEvent": {
+    "id": "tipping-arctic",
+    "title": "Climate shock: Arctic methane release warning",
+    "description": "Scientists warn of destabilising methane hydrates in the Arctic.",
+    "justified": true,
+    "occurredAt": "2025-11-07T14:44:02.145Z"
+  },
+  "projects": [
+    {
+      "id": "proj-afforestation",
+      "name": "Native Species Afforestation",
+      "description": "Establish new forests on degraded lands using locally-adapted native tree species mixes.",
+      "coBenefits": "Watershed protection; habitat connectivity; community engagement in planting.",
+      "xcrBid": 410000,
+      "co2eMitigation": 520000,
+      "mitigationTonnes": 520000,
+      "supplyPressure": 330000,
+      "sentimentEffect": 0.05,
+      "insuranceBuffer": 8,
+      "mrvStandard": "Verra VCS Afforestation, remote sensing + plot sampling",
+      "rewardMultiplier": 1
+    },
+    {
+      "id": "proj-biochar-agrichar",
+      "name": "Agricultural Biochar Production",
+      "description": "Convert agricultural waste into stable biochar for soil amendment using pyrolysis at 500-700°C.",
+      "coBenefits": "Improved soil water retention and crop yields; reduced fertilizer needs.",
+      "xcrBid": 280000,
+      "co2eMitigation": 350000,
+      "mitigationTonnes": 350000,
+      "supplyPressure": 250000,
+      "sentimentEffect": 0.05,
+      "insuranceBuffer": 7,
+      "mrvStandard": "Puro.earth, H/C ratio &gt; 0.7 verified",
+      "rewardMultiplier": 1
+    },
+    {
+      "id": "proj-peatland",
+      "name": "Peatland Rewetting Project",
+      "description": "Restore degraded peatlands by raising water tables to stop carbon emissions from oxidation.",
+      "coBenefits": "Biodiversity recovery; flood water storage; wildfire risk reduction.",
+      "xcrBid": 330000,
+      "co2eMitigation": 480000,
+      "mitigationTonnes": 480000,
+      "supplyPressure": 260000,
+      "sentimentEffect": 0.04,
+      "insuranceBuffer": 7,
+      "mrvStandard": "Verra VMD0053, water table monitoring + eddy covariance",
+      "rewardMultiplier": 1
+    }
+  ],
   "history": [
     {
-      "turn": 7,
-      "event": "Political: Climate club expands",
-      "project": "proj-dac",
+      "turn": 3,
+      "year": 2025,
+      "quarter": 3,
+      "event": "Climate shock: Arctic methane release warning",
+      "project": "proj-mangroves",
       "floor": 80,
       "market": 80,
-      "mitigation": 1064800,
-      "xcrAwarded": 1064800,
-      "inflation": 1.1556691799999999,
+      "mitigation": 600000,
+      "xcrAwarded": 360000,
+      "rMultiplier": 1,
+      "inflation": 1.12564701587314,
       "guidanceBroken": false,
-      "time": "2025-11-06T15:00:04.565Z"
-    },
-    {
-      "turn": 6,
-      "event": "Political: Climate club expands",
-      "project": "none",
-      "floor": 80,
-      "market": 82.2,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:56.639Z"
-    },
-    {
-      "turn": 5,
-      "event": "Tech breakthrough: DAC efficiency up 10%",
-      "project": "none",
-      "floor": 80,
-      "market": 81.5,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:52.409Z"
-    },
-    {
-      "turn": 4,
-      "event": "Economic shock: global rate spike",
-      "project": "none",
-      "floor": 80,
-      "market": 84.5,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.1549999999999998,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:50.165Z"
-    },
-    {
-      "turn": 3,
-      "event": "Climate shock: Arctic methane release warning",
-      "project": "none",
-      "floor": 80,
-      "market": 84.1,
-      "mitigation": 0,
-      "xcrAwarded": 0,
-      "inflation": 1.14,
-      "guidanceBroken": false,
-      "time": "2025-11-06T14:59:46.856Z"
+      "supermajorityPassed": true,
+      "time": "2025-11-07T14:44:02.145Z"
     },
     {
       "turn": 2,
-      "event": "Economic shock: global rate spike",
+      "year": 2025,
+      "quarter": 2,
+      "event": "Tech breakthrough: DAC efficiency up 10%",
       "project": "none",
       "floor": 80,
-      "market": 83.55,
+      "market": 80,
       "mitigation": 0,
       "xcrAwarded": 0,
-      "inflation": 1.13,
+      "rMultiplier": 1,
+      "inflation": 1.11541951,
       "guidanceBroken": false,
-      "time": "2025-11-06T14:59:43.172Z"
+      "supermajorityPassed": true,
+      "time": "2025-11-07T14:40:07.060Z"
     },
     {
       "turn": 1,
+      "year": 2025,
+      "quarter": 1,
       "event": "Economic shock: global rate spike",
-      "project": "none",
+      "project": "proj-biochar-municipal",
       "floor": 80,
-      "market": 82.85,
-      "mitigation": 0,
-      "xcrAwarded": 0,
+      "market": 80.95,
+      "mitigation": 300000,
+      "xcrAwarded": 240000,
+      "rMultiplier": 1,
       "inflation": 1.115,
       "guidanceBroken": false,
-      "time": "2025-11-06T14:59:37.890Z"
+      "supermajorityPassed": true,
+      "time": "2025-11-07T14:39:47.232Z"
     }
   ],
   "members": [
     {
       "country": "USA",
-      "joinedAt": "2025-11-06T14:59:30.210Z"
+      "joinedAt": "2025-11-07T14:31:21.533Z",
+      "gdpWeight": 1.2213193015212918,
+      "gdpUSD": 28781
+    },
+    {
+      "country": "EU",
+      "joinedAt": "2025-11-07T14:43:17.262Z",
+      "gdpWeight": 0.7786806984787082,
+      "gdpUSD": 18350
     }
   ],
   "credibility": 1,
   "lastFloorChangeTurn": 0,
   "floorStep": 5,
-  "incomingSupply": 300000,
-  "votes": []
+  "votes": [],
+  "turnSubmissions": [],
+  "incomingSupply": 200000,
+  "projectRAdjustments": {},
+  "coalitions": [],
+  "supermajorityDividend": {
+    "active": false,
+    "credibilityBoost": 0,
+    "interventionMultiplier": 1,
+    "milestoneBonusPct": 0,
+    "turnsRemaining": 0,
+    "wasConsecutive": false
+  },
+  "jointMRVActive": false,
+  "jointMRVMembers": [],
+  "jointMRVStartTurn": 0,
+  "rndSurges": [],
+  "reciprocityEscrow": {},
+  "coordinationIndex": {
+    "value": 31,
+    "components": {
+      "coalitionSize": 16,
+      "supermajorityRate": 15,
+      "standardsAlignment": 0,
+      "reciprocity": 0
+    },
+    "effects": {
+      "privateDemandMultiplier": 1.0556776436283002,
+      "trustPremiumUSD": 1.24,
+      "volatilityMultiplier": 0.907,
+      "interventionProbMultiplier": 0.8915
+    }
+  }
 }

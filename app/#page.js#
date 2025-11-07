@@ -133,74 +133,6 @@ function num(v, digits = 2) {
   return (0).toFixed(digits);
 }
 
-// Help tooltip component
-function HelpIcon({ text }) {
-  const [showHelp, setShowHelp] = useState(false);
-
-  return (
-    <span style={{ position: 'relative', display: 'inline-block', marginLeft: '4px' }}>
-      <button
-        type="button"
-        onClick={() => setShowHelp(!showHelp)}
-        style={{
-          background: 'transparent',
-          border: '1px solid #999',
-          borderRadius: '50%',
-          width: '16px',
-          height: '16px',
-          fontSize: '11px',
-          lineHeight: '1',
-          padding: '0',
-          cursor: 'pointer',
-          color: '#666',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          verticalAlign: 'middle',
-        }}
-      >
-        ?
-      </button>
-      {showHelp && (
-        <span
-          style={{
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#2c3e50',
-            color: '#fff',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '13px',
-            lineHeight: '1.4',
-            whiteSpace: 'normal',
-            width: 'max-content',
-            maxWidth: '280px',
-            zIndex: 1000,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
-          {text}
-          <span
-            style={{
-              position: 'absolute',
-              bottom: '-4px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '0',
-              height: '0',
-              borderLeft: '4px solid transparent',
-              borderRight: '4px solid transparent',
-              borderTop: '4px solid #2c3e50',
-            }}
-          />
-        </span>
-      )}
-    </span>
-  );
-}
-
 // chart component (no deps)
 function LineChart({ width = 500, height = 220, series = [], title = '' }) {
   const padding = 35;
@@ -374,31 +306,11 @@ export default function HomePage() {
     votes: [],
   });
 
-  const [selectedCountry, setSelectedCountry] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gcr-selected-country');
-      return saved || 'USA';
-    }
-    return 'USA';
-  });
-  const [ndcText, setNdcText] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gcr-ndc-text');
-      if (saved) return saved;
-    }
-    return COUNTRY_OPTIONS.find((c) => c.code === 'USA').defaultNdc;
-  });
-  const [centralBankOk, setCentralBankOk] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gcr-central-bank-ok');
-      const savedCountry = localStorage.getItem('gcr-selected-country');
-      // Only restore if same country
-      if (saved === 'true' && savedCountry === localStorage.getItem('gcr-selected-country')) {
-        return true;
-      }
-    }
-    return false;
-  });
+  const [selectedCountry, setSelectedCountry] = useState('USA');
+  const [ndcText, setNdcText] = useState(
+    COUNTRY_OPTIONS.find((c) => c.code === 'USA').defaultNdc
+  );
+  const [centralBankOk, setCentralBankOk] = useState(false);
   const [inClimateClub, setInClimateClub] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [chosenProjectId, setChosenProjectId] = useState(null);
@@ -413,17 +325,7 @@ export default function HomePage() {
   const [wantReset, setWantReset] = useState(false);
   const [showMouModal, setShowMouModal] = useState(false);
   const [mouScrolledToEnd, setMouScrolledToEnd] = useState(false);
-  const [mouAgreed, setMouAgreed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gcr-mou-agreed');
-      const savedCountry = localStorage.getItem('gcr-selected-country');
-      // Only restore if same country
-      if (saved === 'true' && savedCountry === localStorage.getItem('gcr-selected-country')) {
-        return true;
-      }
-    }
-    return false;
-  });
+  const [mouAgreed, setMouAgreed] = useState(false);
   const mouRef = useRef(null);
 
   // Turn readiness tracking
@@ -431,31 +333,7 @@ export default function HomePage() {
   const [allPlayersReady, setAllPlayersReady] = useState(false);
   const [waitingFor, setWaitingFor] = useState([]);
   const [readinessStatus, setReadinessStatus] = useState({ submissionsCount: 0, totalPlayers: 0 });
-  const [voteTimeoutExpires, setVoteTimeoutExpires] = useState(null);
-  const [timeoutExpired, setTimeoutExpired] = useState(false);
   const currentTurnRef = useRef(1);
-
-  // Player instructions
-  const [showInstructions, setShowInstructions] = useState(false);
-
-  // Check if player has seen instructions before
-  useEffect(() => {
-    if (inClimateClub) {
-      const hasSeenInstructions = typeof window !== 'undefined'
-        ? localStorage.getItem('gcr-instructions-dismissed')
-        : null;
-      if (!hasSeenInstructions) {
-        setShowInstructions(true);
-      }
-    }
-  }, [inClimateClub]);
-
-  const dismissInstructions = () => {
-    setShowInstructions(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('gcr-instructions-dismissed', 'true');
-    }
-  };
 
   // load initial game state on mount
   useEffect(() => {
@@ -514,32 +392,6 @@ export default function HomePage() {
   useEffect(() => {
     currentTurnRef.current = simState.turn;
   }, [simState.turn]);
-
-  // Check for voting timeout expiration and force re-renders for countdown
-  useEffect(() => {
-    if (!voteTimeoutExpires || allPlayersReady) {
-      setTimeoutExpired(false);
-      return;
-    }
-
-    const checkTimeout = () => {
-      const now = Date.now();
-      if (now >= voteTimeoutExpires) {
-        setTimeoutExpired(true);
-      } else {
-        // Force re-render by updating readiness status to show countdown
-        setReadinessStatus(prev => ({ ...prev }));
-      }
-    };
-
-    // Check immediately
-    checkTimeout();
-
-    // Check every second to update countdown
-    const intervalId = setInterval(checkTimeout, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [voteTimeoutExpires, allPlayersReady]);
 
   // Poll for turn readiness status and detect turn changes
   useEffect(() => {
@@ -613,27 +465,9 @@ export default function HomePage() {
 
   function handleCountryChange(e) {
     const code = e.target.value;
-    const previousCountry = selectedCountry;
-
     setSelectedCountry(code);
     const country = COUNTRY_OPTIONS.find((c) => c.code === code);
     setNdcText(country.defaultNdc);
-
-    // If country changed, clear checkboxes and localStorage
-    if (code !== previousCountry) {
-      setCentralBankOk(false);
-      setMouAgreed(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('gcr-central-bank-ok');
-        localStorage.removeItem('gcr-mou-agreed');
-      }
-    }
-
-    // Save new country selection
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('gcr-selected-country', code);
-      localStorage.setItem('gcr-ndc-text', country.defaultNdc);
-    }
   }
 
   function handleMouScroll() {
@@ -717,14 +551,6 @@ export default function HomePage() {
 
     setInClimateClub(true);
 
-    // Save selections to localStorage on successful join
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('gcr-selected-country', selectedCountry);
-      localStorage.setItem('gcr-ndc-text', ndcText);
-      localStorage.setItem('gcr-central-bank-ok', 'true');
-      localStorage.setItem('gcr-mou-agreed', 'true');
-    }
-
     await fetch('/api/join-club', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -743,15 +569,6 @@ export default function HomePage() {
   async function nextTurn() {
     // If not yet submitted, submit turn choices
     if (!hasSubmittedTurn) {
-      // Collect R adjustments for all projects
-      const rAdjustments = {};
-      projectDrafts.forEach(proj => {
-        rAdjustments[proj.id] = {
-          R: Number.isFinite(proj.rewardMultiplier) ? proj.rewardMultiplier : 1.0,
-          note: proj.rNote || ''
-        };
-      });
-
       const submitRes = await fetch('/api/submit-turn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -759,7 +576,6 @@ export default function HomePage() {
           country: selectedCountry,
           chosenProjectId,
           floorDecision,
-          rAdjustments,
         }),
       });
 
@@ -773,10 +589,8 @@ export default function HomePage() {
           totalPlayers: submitData.totalPlayers || 0,
         });
 
-        // If not all ready yet, start 30-second timeout and don't proceed
+        // If not all ready yet, don't proceed
         if (!submitData.allReady) {
-          const timeoutTime = Date.now() + 30000; // 30 seconds from now
-          setVoteTimeoutExpires(timeoutTime);
           return;
         }
       } else {
@@ -784,11 +598,10 @@ export default function HomePage() {
       }
     }
 
-    // All players are ready OR timeout expired, advance the turn
+    // All players are ready, advance the turn
     const bodyToSend = {
       ...simState,
       playerCountry: selectedCountry,
-      forceAdvance: timeoutExpired, // Flag to indicate timeout override
     };
 
     const res = await fetch('/api/nextturn', {
@@ -836,8 +649,6 @@ export default function HomePage() {
     setHasSubmittedTurn(false);
     setAllPlayersReady(false);
     setWaitingFor([]);
-    setVoteTimeoutExpires(null);
-    setTimeoutExpired(false);
   }
 
   async function setFloorNow() {
@@ -1114,37 +925,6 @@ export default function HomePage() {
     xcrSeries.push({ x: turn, y: cumulativeXcr });
   });
 
-  // Helper function to get R consensus status for a project
-  function getRConsensusStatus(projectId) {
-    const adjustments = simState.projectRAdjustments?.[projectId] || {};
-    const members = simState.members || [];
-
-    // Get all R values that have been submitted
-    const rValues = Object.values(adjustments).map(adj => adj.R);
-
-    if (rValues.length === 0) {
-      return { hasAdjustments: false, consensus: true, values: [] };
-    }
-
-    // Check if all submitted R values are the same
-    const uniqueValues = [...new Set(rValues)];
-    const consensus = uniqueValues.length === 1;
-
-    // Check if different from default
-    const hasAdjustments = rValues.some(r => r !== 1.0);
-
-    return {
-      hasAdjustments,
-      consensus,
-      values: Object.entries(adjustments).map(([country, adj]) => ({
-        country,
-        R: adj.R,
-        note: adj.note
-      })),
-      needsConsensus: members.length > 0 && rValues.length < members.length
-    };
-  }
-
   return (
     <main className="app-shell app-shell--wide">
       <header className="page-header">
@@ -1154,17 +934,14 @@ export default function HomePage() {
             Playing as: <b>{selectedCountry}</b>
           </p>
         </div>
-        <div className="page-actions" style={{ gap: '8px' }}>
-          <button type="button" onClick={() => setShowInstructions(true)} className="btn-ghost">
-            📖 Instructions
-          </button>
-          <button type="button" onClick={nextTurn} className="btn-primary" disabled={hasSubmittedTurn && !allPlayersReady && !timeoutExpired}>
-            {hasSubmittedTurn ? (allPlayersReady ? '▶️ Advance Turn' : timeoutExpired ? '▶️ Advance Turn (Timeout)' : '⏳ Submitted') : '▶️ Next Turn'}
+        <div className="page-actions">
+          <button type="button" onClick={nextTurn} className="btn-primary" disabled={hasSubmittedTurn && !allPlayersReady}>
+            {hasSubmittedTurn ? (allPlayersReady ? '▶️ Advance Turn' : '⏳ Submitted') : '▶️ Next Turn'}
           </button>
         </div>
       </header>
 
-      {hasSubmittedTurn && !allPlayersReady && !timeoutExpired && (
+      {hasSubmittedTurn && !allPlayersReady && (
         <section className="section-card compact" style={{ backgroundColor: '#fff3cd', borderLeft: '4px solid #ffc107' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>⏳</span>
@@ -1175,25 +952,6 @@ export default function HomePage() {
                 {waitingFor.length > 0 && (
                   <span> Waiting for: {waitingFor.join(', ')}</span>
                 )}
-                {voteTimeoutExpires && (
-                  <span>
-                    {' '}(Timeout in {Math.max(0, Math.ceil((voteTimeoutExpires - Date.now()) / 1000))}s)
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {hasSubmittedTurn && !allPlayersReady && timeoutExpired && (
-        <section className="section-card compact" style={{ backgroundColor: '#ffebcc', borderLeft: '4px solid #ff9800' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>⏱️</span>
-            <div>
-              <strong>Voting timeout reached</strong>
-              <p style={{ margin: '4px 0 0 0' }}>
-                Not all players have submitted. You can now advance the turn with current submissions.
               </p>
             </div>
           </div>
@@ -1255,8 +1013,6 @@ export default function HomePage() {
                   typeof proj.co2eMitigation === 'number' && Number.isFinite(proj.co2eMitigation)
                     ? `${proj.co2eMitigation.toLocaleString()} tCO₂e`
                     : '';
-                const rStatus = getRConsensusStatus(proj.id);
-
                 return (
                   <button
                     type="button"
@@ -1266,28 +1022,10 @@ export default function HomePage() {
                     }`}
                     onClick={() => handleSelectProject(proj.id)}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="project-browser__name">{proj.name}</span>
-                        {rStatus.hasAdjustments && (
-                          <span
-                            style={{
-                              fontSize: '0.7em',
-                              padding: '2px 6px',
-                              borderRadius: '3px',
-                              backgroundColor: rStatus.consensus ? '#d4edda' : '#fff3cd',
-                              color: rStatus.consensus ? '#155724' : '#856404',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {rStatus.consensus ? '✓ R set' : '⚠ R varies'}
-                          </span>
-                        )}
-                      </div>
-                      {mitigationLabel ? (
-                        <span className="project-browser__meta">{mitigationLabel}</span>
-                      ) : null}
-                    </div>
+                    <span className="project-browser__name">{proj.name}</span>
+                    {mitigationLabel ? (
+                      <span className="project-browser__meta">{mitigationLabel}</span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -1331,10 +1069,7 @@ export default function HomePage() {
                   </label>
                   <div className="project-form__grid">
                     <label className="project-form__field">
-                      <span>
-                        XCR bid (cost)
-                        <HelpIcon text="Total XCR carbon credits requested for this project. This is what you pay for the mitigation." />
-                      </span>
+                      <span>XCR bid (cost)</span>
                       <input
                         type="number"
                         value={
@@ -1350,10 +1085,7 @@ export default function HomePage() {
                       />
                     </label>
                     <label className="project-form__field">
-                      <span>
-                        CO₂e mitigation (t)
-                        <HelpIcon text="Total tonnes of CO₂ equivalent this project will remove or avoid. This is your actual climate impact!" />
-                      </span>
+                      <span>CO₂e mitigation (t)</span>
                       <input
                         type="number"
                         value={
@@ -1376,10 +1108,7 @@ export default function HomePage() {
                   </div>
                   <div className="project-form__grid">
                     <label className="project-form__field">
-                      <span>
-                        Supply pressure
-                        <HelpIcon text="How many new XCR credits this project adds to market supply. Higher supply can reduce market price." />
-                      </span>
+                      <span>Supply pressure</span>
                       <input
                         type="number"
                         value={
@@ -1400,10 +1129,7 @@ export default function HomePage() {
                       />
                     </label>
                     <label className="project-form__field">
-                      <span>
-                        Sentiment effect
-                        <HelpIcon text="How this project affects market sentiment. Positive = attracts private capital. Negative = reduces confidence." />
-                      </span>
+                      <span>Sentiment effect</span>
                       <input
                         type="number"
                         value={
@@ -1423,10 +1149,7 @@ export default function HomePage() {
                       />
                     </label>
                     <label className="project-form__field">
-                      <span>
-                        Insurance buffer (%)
-                        <HelpIcon text="Percentage buffer for delivery risk. Higher buffer = more conservative but more credible estimates." />
-                      </span>
+                      <span>Insurance buffer (%)</span>
                       <input
                         type="number"
                         value={
@@ -1447,111 +1170,6 @@ export default function HomePage() {
                       />
                     </label>
                   </div>
-                  <label className="project-form__field">
-                    <span>
-                      MRV Standard
-                      <HelpIcon text="Measurement, Reporting & Verification standard. Defines how mitigation is measured and verified (read-only)." />
-                    </span>
-                    <input
-                      type="text"
-                      value={activeProject.mrvStandard || 'Not specified'}
-                      readOnly
-                      style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
-                    />
-                  </label>
-                  <div className="project-form__grid">
-                    <label className="project-form__field">
-                      <span>
-                        Reward Multiplier (R)
-                        <HelpIcon text="Adjust XCR rewards to reflect different effort levels. R=1.0 is standard. R>1.0 = higher reward, R<1.0 = lower reward. All players must agree!" />
-                      </span>
-                      <input
-                        type="number"
-                        value={
-                          Number.isFinite(activeProject.rewardMultiplier)
-                            ? activeProject.rewardMultiplier
-                            : 1.0
-                        }
-                        min={0}
-                        max={2}
-                        step={0.1}
-                        onChange={(e) =>
-                          updateProjectField(
-                            activeProject.id,
-                            'rewardMultiplier',
-                            e.target.value,
-                            { numeric: true }
-                          )
-                        }
-                      />
-                      <span style={{ fontSize: '0.85em', color: '#666' }}>
-                        XCR awarded = XCR bid × R (default 1.0)
-                      </span>
-                    </label>
-                    <label className="project-form__field">
-                      <span>
-                        R Adjustment Note
-                        <HelpIcon text="Explain why you adjusted R. Helps other players understand your reasoning and reach consensus." />
-                      </span>
-                      <input
-                        type="text"
-                        value={activeProject.rNote || ''}
-                        placeholder="Why adjust R? (optional)"
-                        onChange={(e) =>
-                          updateProjectField(activeProject.id, 'rNote', e.target.value)
-                        }
-                      />
-                    </label>
-                  </div>
-
-                  {(() => {
-                    const rStatus = getRConsensusStatus(activeProject.id);
-                    const otherPlayersRAdjustments = rStatus.values.filter(v => v.country !== selectedCountry);
-
-                    if (otherPlayersRAdjustments.length > 0) {
-                      return (
-                        <div style={{
-                          marginTop: '16px',
-                          padding: '12px',
-                          backgroundColor: rStatus.consensus ? '#e7f3ff' : '#fff3cd',
-                          borderRadius: '6px',
-                          border: `1px solid ${rStatus.consensus ? '#b3d9ff' : '#ffc107'}`
-                        }}>
-                          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '0.9em' }}>
-                            {rStatus.consensus ? '✓ Other players\' R adjustments:' : '⚠ Conflicting R adjustments:'}
-                          </div>
-                          {otherPlayersRAdjustments.map(({ country, R, note }) => (
-                            <div key={country} style={{
-                              padding: '8px',
-                              marginBottom: '6px',
-                              backgroundColor: 'white',
-                              borderRadius: '4px',
-                              fontSize: '0.85em'
-                            }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                <strong>{country}</strong>
-                                <span style={{ fontWeight: 'bold', color: R === 1.0 ? '#666' : '#0066cc' }}>
-                                  R = {R.toFixed(1)}
-                                </span>
-                              </div>
-                              {note && (
-                                <div style={{ color: '#666', fontStyle: 'italic' }}>
-                                  "{note}"
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                          {!rStatus.consensus && (
-                            <div style={{ marginTop: '8px', fontSize: '0.85em', color: '#856404' }}>
-                              ⚠ All players must agree on R value before this project can be selected.
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-
                   <div className="project-form__actions">
                     <button
                       type="button"
@@ -1644,144 +1262,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section-card compact">
-        <h3>Cooperation Metrics</h3>
-        <div className="stat-list">
-          <p>
-            <span>
-              Coordination Index
-              <HelpIcon text="Overall cooperation score (0-100). Combines coalition size, voting alignment, standards, and reciprocity. Higher = better outcomes." />
-            </span>
-            <span>
-              {simState.coordinationIndex?.value?.toFixed(1) || '0.0'} / 100
-              {' '}
-              ({simState.coordinationIndex?.value >= 80 ? 'Excellent' :
-                simState.coordinationIndex?.value >= 60 ? 'Strong' :
-                simState.coordinationIndex?.value >= 40 ? 'Moderate' :
-                simState.coordinationIndex?.value >= 20 ? 'Weak' : 'Minimal'})
-            </span>
-          </p>
-          {simState.coordinationIndex?.components && (
-            <>
-              <p style={{ paddingLeft: '12px', fontSize: '0.9em' }}>
-                <span>
-                  • Coalition Size
-                  <HelpIcon text="Points awarded based on number and economic weight of coalition members. Larger coalitions = more influence." />
-                </span>
-                <span>{simState.coordinationIndex.components.coalitionSize?.toFixed(1) || '0.0'} / 40</span>
-              </p>
-              <p style={{ paddingLeft: '12px', fontSize: '0.9em' }}>
-                <span>
-                  • Supermajority Rate
-                  <HelpIcon text="Points for frequent supermajority votes (>66% GDP weight). Shows strong political alignment on floor decisions." />
-                </span>
-                <span>{simState.coordinationIndex.components.supermajorityRate?.toFixed(1) || '0.0'} / 30</span>
-              </p>
-              <p style={{ paddingLeft: '12px', fontSize: '0.9em' }}>
-                <span>
-                  • Standards Alignment
-                  <HelpIcon text="Points for joint MRV systems and shared measurement standards. Improves transparency and trust." />
-                </span>
-                <span>{simState.coordinationIndex.components.standardsAlignment?.toFixed(1) || '0.0'} / 20</span>
-              </p>
-              <p style={{ paddingLeft: '12px', fontSize: '0.9em' }}>
-                <span>
-                  • Reciprocity
-                  <HelpIcon text="Points for reciprocal agreements and mutual support. Builds long-term cooperation patterns." />
-                </span>
-                <span>{simState.coordinationIndex.components.reciprocity?.toFixed(1) || '0.0'} / 10</span>
-              </p>
-            </>
-          )}
-          <p>
-            <span>
-              Supermajority Dividend
-              <HelpIcon text="Bonus when >66% GDP agrees on floor changes. Grants credibility boost, better intervention rates, and milestone bonuses." />
-            </span>
-            <span>
-              {simState.supermajorityDividend?.active ?
-                `Active (${simState.supermajorityDividend.turnsRemaining || 0} turns)` :
-                'Inactive'}
-            </span>
-          </p>
-          <p>
-            <span>
-              Joint MRV
-              <HelpIcon text="Shared measurement, reporting & verification system. Improves data quality and coordination index when active." />
-            </span>
-            <span>
-              {simState.jointMRVActive ?
-                `Active (${simState.jointMRVMembers?.length || 0} members)` :
-                'Inactive'}
-            </span>
-          </p>
-          <p>
-            <span>
-              Active R&D Surges
-              <HelpIcon text="Research & development initiatives providing technology bonuses. Created through coalition agreements." />
-            </span>
-            <span>{simState.rndSurges?.filter(s => s.turnsRemaining > 0).length || 0}</span>
-          </p>
-        </div>
-        {simState.members && simState.members.length > 0 && (
-          <>
-            <h4 style={{ marginTop: '16px', marginBottom: '8px' }}>Member GDP Weights</h4>
-            <div className="stat-list" style={{ fontSize: '0.9em' }}>
-              {simState.members.map((m) => (
-                <p key={m.country}>
-                  <span>{m.country}</span>
-                  <span>{m.gdpWeight?.toFixed(3) || 'N/A'}</span>
-                </p>
-              ))}
-            </div>
-          </>
-        )}
-      </section>
-
       <div className="two-column-grid">
         <section className="section-card compact">
           <h3>Key indicators</h3>
           <div className="stat-list">
             <p>
-              <span>
-                Time
-                <HelpIcon text="Simulation time progresses quarterly from 2025 to 2050. Annual anchors (📅) mark year-end." />
-              </span>
-              <span>{simState.year || 2025} Q{simState.quarter || 1}{simState.isAnnualAnchor ? ' 📅' : ''}</span>
+              <span>Turn</span>
+              <span>{simState.turn || 1}</span>
             </p>
             <p>
-              <span>
-                Phase
-                <HelpIcon text="Phase 1 (2025-2029): Foundation. Phase 2 (2030-2039): Scaling. Phase 3 (2040-2050): Maturity." />
-              </span>
-              <span>Phase {simState.phase || 1} {simState.phase === 1 ? '(Early)' : simState.phase === 2 ? '(Middle)' : '(Late)'}</span>
-            </p>
-            <p>
-              <span>
-                Floor
-                <HelpIcon text="XCR price floor set by the CEA. Central banks defend this minimum price using CQE when market falls below." />
-              </span>
+              <span>Floor</span>
               <span>${num(simState.floor)}/t</span>
             </p>
             <p>
-              <span>
-                Market
-                <HelpIcon text="Current XCR market price. Influenced by supply, demand, sentiment, and credibility. Can't fall below Floor." />
-              </span>
+              <span>Market</span>
               <span>${num(simState.market)}/t</span>
             </p>
             <p>
-              <span>
-                Inflation
-                <HelpIcon text="Accumulated inflation from CQE purchases. Too much CQE intervention increases inflation risk." />
-              </span>
+              <span>Inflation</span>
               <span>{num(simState.inflation)}%</span>
             </p>
             <p>
-              <span>
-                Private Capital Share
-                <HelpIcon text="Percentage of carbon market funded by private capital vs. public CQE. Higher is better for sustainability." />
-              </span>
+              <span>Private Capital Share</span>
               <span>
                 {typeof simState.privateShare === 'number'
                   ? (simState.privateShare * 100).toFixed(1)
@@ -1790,24 +1292,15 @@ export default function HomePage() {
               </span>
             </p>
             <p>
-              <span>
-                CQE Purchases
-                <HelpIcon text="Central bank quantitative easing purchases this turn to defend the floor price. Increases inflation." />
-              </span>
+              <span>CQE Purchases</span>
               <span>{num(simState.cqeBuy)}</span>
             </p>
             <p>
-              <span>
-                Credibility
-                <HelpIcon text="Policy credibility score. Breaking forward guidance (changing floor too often) reduces credibility and market confidence." />
-              </span>
+              <span>Credibility</span>
               <span>{num(simState.credibility)}</span>
             </p>
             <p>
-              <span>
-                Total Mitigation
-                <HelpIcon text="Cumulative CO₂e mitigated across all projects funded to date. This is your collective climate impact!" />
-              </span>
+              <span>Total Mitigation</span>
               <span>
                 {typeof simState.totalMitigation === 'number'
                   ? (simState.totalMitigation / 1_000_000).toFixed(2)
@@ -1825,7 +1318,7 @@ export default function HomePage() {
               <ul>
                 {simState.history.map((h) => (
                   <li key={h.time}>
-                    <b>{h.year || 2025} Q{h.quarter || 1}:</b> {h.event} | proj: {h.project}{' '}
+                    <b>Turn {h.turn}:</b> {h.event} | proj: {h.project}{' '}
                     {h.guidanceBroken ? <span className="note-warning">(guidance broken)</span> : null}
                   </li>
                 ))}
@@ -1851,97 +1344,6 @@ export default function HomePage() {
           ]}
         />
       </section>
-
-      {showInstructions ? (
-        <div className="modal-overlay">
-          <div className="modal-card" style={{ maxWidth: '700px' }}>
-            <div className="modal-card__header">
-              <h2>Welcome to the GCR Simulation</h2>
-            </div>
-            <div className="modal-card__content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-              <h3>What is this?</h3>
-              <p>
-                You're playing as a country in the Global Carbon Reward (GCR) climate club. The club uses a
-                carbon reward system with a price floor guarantee to incentivize mitigation projects and
-                coordinate climate action.
-              </p>
-
-              <h3>How Turns Work</h3>
-              <p>
-                <strong>Synchronized Multiplayer:</strong> All players must submit their choices before the turn advances.
-                When you click "Next Turn":
-              </p>
-              <ul>
-                <li>You'll see an amber banner if waiting for other players</li>
-                <li>You'll see a green banner when all players are ready</li>
-                <li>Then you can click "Advance Turn" to proceed</li>
-              </ul>
-              <p>
-                <strong>Time:</strong> Each turn = 1 quarter (3 months). The simulation runs from 2025 Q1 to 2050 Q4
-                across 3 phases (Early, Middle, Late).
-              </p>
-
-              <h3>What You Do Each Turn</h3>
-              <ol>
-                <li><strong>Select a Project:</strong> Browse the 3 proposed mitigation projects and select one.
-                    Your choice is picked randomly with equal weight among all players.</li>
-                <li><strong>Vote on Floor Price:</strong> Vote to hold, raise, or lower the XCR price floor.
-                    Floor decisions use <strong>GDP-weighted voting</strong> and require 66% supermajority to pass.</li>
-                <li><strong>Submit Turn:</strong> Click "Next Turn" to submit your choices and wait for other players.</li>
-              </ol>
-
-              <h3>Cooperation Mechanics</h3>
-              <p>
-                <strong>Coordination Index:</strong> Your club's cooperation level (0-100) affects market dynamics.
-                Higher coordination = more private capital, trust premium, less volatility.
-              </p>
-              <p>
-                <strong>Supermajority Dividend:</strong> When ≥66% vote for the same floor decision, you get bonuses:
-                +10 credibility, reduced CQE intervention probability, and milestone bonuses for 4 turns.
-              </p>
-              <p>
-                <strong>GDP Weights:</strong> Larger economies have more voting power on floor changes (but not projects).
-                Check the "Cooperation Metrics" section to see weights.
-              </p>
-
-              <h3>Key Metrics to Watch</h3>
-              <ul>
-                <li><strong>Floor vs Market:</strong> When market &lt; floor, the CEA uses CQE to support the price</li>
-                <li><strong>Inflation:</strong> CQE purchases increase inflation—balance carefully</li>
-                <li><strong>Private Capital Share:</strong> Higher = less reliance on public CQE</li>
-                <li><strong>Credibility:</strong> Don't break forward guidance (3-turn cooldown on floor changes)</li>
-                <li><strong>Total Mitigation:</strong> Your cumulative impact on climate</li>
-              </ul>
-
-              <h3>Tips for Success</h3>
-              <ul>
-                <li>Coordinate with other players to achieve supermajority votes</li>
-                <li>Respect the 3-turn cooldown on floor changes (unless event justifies it)</li>
-                <li>Balance mitigation impact with supply pressure and sentiment effects</li>
-                <li>Watch inflation—too much CQE spending can destabilize the system</li>
-                <li>Build credibility by keeping forward guidance commitments</li>
-              </ul>
-
-              <p style={{ marginTop: '20px', fontStyle: 'italic', color: '#666' }}>
-                This is a research simulation based on the Global Carbon Reward paper.
-                For details, see the requirements.txt file in the repository.
-              </p>
-            </div>
-            <div className="modal-card__footer">
-              <button type="button" onClick={dismissInstructions} className="btn-primary">
-                Got it, let's play
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowInstructions(false)}
-                className="btn-secondary"
-              >
-                Remind me later
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </main>
   );
 }

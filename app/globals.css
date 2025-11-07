@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
 }
 
 @theme inline {
@@ -23,8 +23,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.45;
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -32,20 +34,22 @@ h2,
 h3,
 h4 {
   margin: 0;
-  color: #142942;
+  color: #000000;
 }
 
 h1 {
-  font-size: 1.8rem;
-  font-weight: 650;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 p {
@@ -74,8 +78,9 @@ p {
 }
 
 .page-header .subtitle {
-  color: #305b42;
-  font-size: 0.95rem;
+  color: #000000;
+  font-size: 1.05rem;
+  font-weight: 500;
 }
 
 .page-actions {
@@ -140,8 +145,8 @@ p {
 }
 
 .muted {
-  color: #6a7689;
-  font-size: 0.92rem;
+  color: #000000;
+  font-size: 1rem;
 }
 
 .error-text {
@@ -208,13 +213,15 @@ button {
 
 select,
 textarea,
+input[type="text"],
 input[type="number"] {
   border: 1px solid #c8d5eb;
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font: inherit;
-  background: #fbfcff;
-  color: inherit;
+  font-size: 16px;
+  background: #ffffff;
+  color: #000000;
 }
 
 textarea {
@@ -264,9 +271,11 @@ textarea {
   gap: 10px;
   border: 1px solid #d5e1f2;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: #fff;
   cursor: pointer;
+  font-size: 1rem;
+  color: #000000;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
@@ -300,10 +309,11 @@ textarea {
   width: 100%;
   border: 1px solid #d5e1f2;
   background: #f5f8ff;
-  color: inherit;
+  color: #000000;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-weight: 600;
+  font-size: 1rem;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -329,9 +339,9 @@ textarea {
 }
 
 .project-browser__meta {
-  font-size: 0.85rem;
-  color: #425871;
-  font-weight: 500;
+  font-size: 0.95rem;
+  color: #000000;
+  font-weight: 600;
   margin-left: 12px;
 }
 
@@ -363,8 +373,9 @@ textarea {
 }
 
 .project-form__field span {
-  font-weight: 600;
-  color: #1e3353;
+  font-weight: 700;
+  color: #000000;
+  font-size: 1rem;
 }
 
 .project-form__grid {
@@ -405,20 +416,21 @@ textarea {
 }
 
 .scoreboard__description {
-  font-size: 0.9rem;
-  color: #425871;
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 500;
 }
 
 .scoreboard__counts {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .scoreboard__counts span:first-child {
-  color: #20324a;
-  font-weight: 600;
+  color: #000000;
+  font-weight: 700;
 }
 
 .scoreboard__counts span:nth-child(2) {
@@ -429,7 +441,7 @@ textarea {
 .scoreboard table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: 1rem;
 }
 
 .scoreboard th,
@@ -454,7 +466,9 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 16px;
-  font-size: 0.82rem;
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 500;
 }
 
 .chart-legend > div {
@@ -510,6 +524,7 @@ textarea {
   overflow-y: auto;
   flex: 1;
   white-space: pre-wrap;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #000000;
 }

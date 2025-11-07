@@ -1,4 +1,5 @@
 <projects>
+  <!-- Existing Projects -->
   <project>
     <id>proj-dac</id>
     <name>Direct Air Capture Plant</name>
@@ -9,6 +10,7 @@
     <supplyPressure>800000</supplyPressure>
     <sentimentEffect>0.02</sentimentEffect>
     <insuranceBuffer>12</insuranceBuffer>
+    <mrvStandard>ISO 14064-2, third-party verified</mrvStandard>
   </project>
   <project>
     <id>proj-methane</id>
@@ -20,6 +22,7 @@
     <supplyPressure>300000</supplyPressure>
     <sentimentEffect>0.03</sentimentEffect>
     <insuranceBuffer>8</insuranceBuffer>
+    <mrvStandard>EPA Method 21, continuous monitoring</mrvStandard>
   </project>
   <project>
     <id>proj-mangroves</id>
@@ -31,5 +34,248 @@
     <supplyPressure>200000</supplyPressure>
     <sentimentEffect>0.04</sentimentEffect>
     <insuranceBuffer>5</insuranceBuffer>
+    <mrvStandard>Verra VM0033, 5-year monitoring</mrvStandard>
+  </project>
+
+  <!-- Biochar Projects -->
+  <project>
+    <id>proj-biochar-agrichar</id>
+    <name>Agricultural Biochar Production</name>
+    <description>Convert agricultural waste into stable biochar for soil amendment using pyrolysis at 500-700°C.</description>
+    <coBenefits>Improved soil water retention and crop yields; reduced fertilizer needs.</coBenefits>
+    <xcrBid>280000</xcrBid>
+    <co2eMitigation>350000</co2eMitigation>
+    <supplyPressure>250000</supplyPressure>
+    <sentimentEffect>0.05</sentimentEffect>
+    <insuranceBuffer>7</insuranceBuffer>
+    <mrvStandard>Puro.earth, H/C ratio &gt; 0.7 verified</mrvStandard>
+  </project>
+  <project>
+    <id>proj-biochar-forestry</id>
+    <name>Forestry Residue Biochar</name>
+    <description>Process logging slash and forest thinnings into biochar with verified carbon permanence &gt;1000 years.</description>
+    <coBenefits>Wildfire risk reduction; creates rural jobs in sustainable forestry.</coBenefits>
+    <xcrBid>320000</xcrBid>
+    <co2eMitigation>400000</co2eMitigation>
+    <supplyPressure>280000</supplyPressure>
+    <sentimentEffect>0.04</sentimentEffect>
+    <insuranceBuffer>9</insuranceBuffer>
+    <mrvStandard>EBC certification, mass balance verified</mrvStandard>
+  </project>
+  <project>
+    <id>proj-biochar-municipal</id>
+    <name>Municipal Waste Biochar</name>
+    <description>Divert urban green waste from landfills to produce biochar for urban greening projects.</description>
+    <coBenefits>Reduced landfill methane; urban heat island mitigation through greening.</coBenefits>
+    <xcrBid>240000</xcrBid>
+    <co2eMitigation>300000</co2eMitigation>
+    <supplyPressure>220000</supplyPressure>
+    <sentimentEffect>0.06</sentimentEffect>
+    <insuranceBuffer>6</insuranceBuffer>
+    <mrvStandard>Local government verification, quarterly audits</mrvStandard>
+  </project>
+
+  <!-- Methane Projects -->
+  <project>
+    <id>proj-methane-coal</id>
+    <name>Coal Mine Methane Capture</name>
+    <description>Capture and oxidize ventilation air methane from active and abandoned coal mines.</description>
+    <coBenefits>Mine safety improvements; potential for local energy generation.</coBenefits>
+    <xcrBid>380000</xcrBid>
+    <co2eMitigation>550000</co2eMitigation>
+    <supplyPressure>350000</supplyPressure>
+    <sentimentEffect>0.02</sentimentEffect>
+    <insuranceBuffer>10</insuranceBuffer>
+    <mrvStandard>CDM methodology ACM0008, flow metered</mrvStandard>
+  </project>
+  <project>
+    <id>proj-methane-dairy</id>
+    <name>Dairy Anaerobic Digestion</name>
+    <description>Install covered lagoon digesters at dairy operations to capture methane for on-farm energy.</description>
+    <coBenefits>Farm energy independence; improved manure management and odor control.</coBenefits>
+    <xcrBid>290000</xcrBid>
+    <co2eMitigation>420000</co2eMitigation>
+    <supplyPressure>270000</supplyPressure>
+    <sentimentEffect>0.03</sentimentEffect>
+    <insuranceBuffer>7</insuranceBuffer>
+    <mrvStandard>CAR Livestock Protocol, biogas flow metered</mrvStandard>
+  </project>
+  <project>
+    <id>proj-methane-rice</id>
+    <name>Rice Paddy Methane Reduction</name>
+    <description>Implement alternate wetting/drying irrigation to reduce methane emissions from rice cultivation.</description>
+    <coBenefits>Water conservation; potential yield improvements; farmer training programs.</coBenefits>
+    <xcrBid>220000</xcrBid>
+    <co2eMitigation>280000</co2eMitigation>
+    <supplyPressure>180000</supplyPressure>
+    <sentimentEffect>0.05</sentimentEffect>
+    <insuranceBuffer>5</insuranceBuffer>
+    <mrvStandard>Verra VM0042, field sampling 3x/season</mrvStandard>
+  </project>
+  <project>
+    <id>proj-methane-oilgas</id>
+    <name>Oil &amp; Gas Fugitive Emissions</name>
+    <description>Deploy LDAR (Leak Detection and Repair) program with infrared cameras and continuous monitoring.</description>
+    <coBenefits>Improved operational efficiency; regulatory compliance; safety enhancements.</coBenefits>
+    <xcrBid>340000</xcrBid>
+    <co2eMitigation>480000</co2eMitigation>
+    <supplyPressure>310000</supplyPressure>
+    <sentimentEffect>0.01</sentimentEffect>
+    <insuranceBuffer>8</insuranceBuffer>
+    <mrvStandard>OGI Method 21, quarterly surveys</mrvStandard>
+  </project>
+
+  <!-- Blue Carbon Projects -->
+  <project>
+    <id>proj-seagrass</id>
+    <name>Seagrass Meadow Restoration</name>
+    <description>Restore degraded seagrass beds in coastal zones with long-term monitoring and protection.</description>
+    <coBenefits>Fishery nursery habitat; coastal erosion prevention; water quality improvement.</coBenefits>
+    <xcrBid>310000</xcrBid>
+    <co2eMitigation>380000</co2eMitigation>
+    <supplyPressure>240000</supplyPressure>
+    <sentimentEffect>0.06</sentimentEffect>
+    <insuranceBuffer>6</insuranceBuffer>
+    <mrvStandard>Verra VM0033 (coastal wetlands), sediment core sampling</mrvStandard>
+  </project>
+  <project>
+    <id>proj-kelp</id>
+    <name>Kelp Forest Cultivation</name>
+    <description>Large-scale kelp farming with deep-ocean sinking for long-term carbon sequestration.</description>
+    <coBenefits>Marine biodiversity enhancement; potential for biofuel feedstock.</coBenefits>
+    <xcrBid>420000</xcrBid>
+    <co2eMitigation>450000</co2eMitigation>
+    <supplyPressure>320000</supplyPressure>
+    <sentimentEffect>0.04</sentimentEffect>
+    <insuranceBuffer>4</insuranceBuffer>
+    <mrvStandard>Experimental protocol, ocean carbon flux towers</mrvStandard>
+  </project>
+  <project>
+    <id>proj-saltmarsh</id>
+    <name>Salt Marsh Conservation</name>
+    <description>Protect and restore tidal salt marshes threatened by development and sea-level rise.</description>
+    <coBenefits>Storm surge buffering; critical habitat for migratory birds; recreation.</coBenefits>
+    <xcrBid>270000</xcrBid>
+    <co2eMitigation>340000</co2eMitigation>
+    <supplyPressure>210000</supplyPressure>
+    <sentimentEffect>0.07</sentimentEffect>
+    <insuranceBuffer>5</insuranceBuffer>
+    <mrvStandard>Plan Vivo coastal protocol, annual biomass surveys</mrvStandard>
+  </project>
+
+  <!-- Enhanced Weathering & Mineralization -->
+  <project>
+    <id>proj-olivine</id>
+    <name>Enhanced Olivine Weathering</name>
+    <description>Distribute crushed olivine on agricultural lands and coastal zones to accelerate CO2 mineralization.</description>
+    <coBenefits>Soil pH improvement; potential crop yield benefits; reduced ocean acidification.</coBenefits>
+    <xcrBid>520000</xcrBid>
+    <co2eMitigation>600000</co2eMitigation>
+    <supplyPressure>450000</supplyPressure>
+    <sentimentEffect>0.02</sentimentEffect>
+    <insuranceBuffer>11</insuranceBuffer>
+    <mrvStandard>Geochemical modeling + field validation, pending standard</mrvStandard>
+  </project>
+  <project>
+    <id>proj-carboncure</id>
+    <name>Concrete CO2 Mineralization</name>
+    <description>Inject captured CO2 into concrete during mixing, permanently mineralizing carbon in building materials.</description>
+    <coBenefits>Improved concrete strength; reduced cement usage; scalable to construction sector.</coBenefits>
+    <xcrBid>380000</xcrBid>
+    <co2eMitigation>320000</co2eMitigation>
+    <supplyPressure>280000</supplyPressure>
+    <sentimentEffect>0.03</sentimentEffect>
+    <insuranceBuffer>14</insuranceBuffer>
+    <mrvStandard>ISO 14064-2, mass balance with compression data</mrvStandard>
+  </project>
+
+  <!-- Soil Carbon & Regenerative Agriculture -->
+  <project>
+    <id>proj-regen-ag</id>
+    <name>Regenerative Agriculture Transition</name>
+    <description>Support farmers transitioning to no-till, cover crops, and rotational grazing practices.</description>
+    <coBenefits>Improved soil health and resilience; biodiversity gains; farmer profitability.</coBenefits>
+    <xcrBid>260000</xcrBid>
+    <co2eMitigation>310000</co2eMitigation>
+    <supplyPressure>200000</supplyPressure>
+    <sentimentEffect>0.06</sentimentEffect>
+    <insuranceBuffer>4</insuranceBuffer>
+    <mrvStandard>Soil sampling 30cm depth, 3-year baseline</mrvStandard>
+  </project>
+  <project>
+    <id>proj-agroforestry</id>
+    <name>Agroforestry Silvopasture</name>
+    <description>Integrate trees into pasture systems for carbon sequestration while maintaining livestock production.</description>
+    <coBenefits>Shade and welfare for livestock; diversified farm income; erosion control.</coBenefits>
+    <xcrBid>300000</xcrBid>
+    <co2eMitigation>390000</co2eMitigation>
+    <supplyPressure>230000</supplyPressure>
+    <sentimentEffect>0.05</sentimentEffect>
+    <insuranceBuffer>6</insuranceBuffer>
+    <mrvStandard>CAR Forest Protocol adapted for agroforestry</mrvStandard>
+  </project>
+
+  <!-- Industrial Processes -->
+  <project>
+    <id>proj-cement-ccus</id>
+    <name>Cement Plant CCUS Retrofit</name>
+    <description>Retrofit existing cement plant with carbon capture system to reduce process emissions.</description>
+    <coBenefits>Industry decarbonization leadership; potential for CO2 utilization products.</coBenefits>
+    <xcrBid>890000</xcrBid>
+    <co2eMitigation>750000</co2eMitigation>
+    <supplyPressure>720000</supplyPressure>
+    <sentimentEffect>0.01</sentimentEffect>
+    <insuranceBuffer>15</insuranceBuffer>
+    <mrvStandard>EPA Subpart H, continuous emissions monitoring</mrvStandard>
+  </project>
+  <project>
+    <id>proj-steel-hydrogen</id>
+    <name>Green Hydrogen Steel Production</name>
+    <description>Deploy hydrogen direct reduction iron (H-DRI) technology to eliminate coal use in steelmaking.</description>
+    <coBenefits>Air quality improvements; technology demonstration for industrial transition.</coBenefits>
+    <xcrBid>1200000</xcrBid>
+    <co2eMitigation>950000</co2eMitigation>
+    <supplyPressure>980000</supplyPressure>
+    <sentimentEffect>0.02</sentimentEffect>
+    <insuranceBuffer>18</insuranceBuffer>
+    <mrvStandard>Process emissions calculation, hydrogen consumption metered</mrvStandard>
+  </project>
+
+  <!-- Nature-Based Solutions -->
+  <project>
+    <id>proj-peatland</id>
+    <name>Peatland Rewetting Project</name>
+    <description>Restore degraded peatlands by raising water tables to stop carbon emissions from oxidation.</description>
+    <coBenefits>Biodiversity recovery; flood water storage; wildfire risk reduction.</coBenefits>
+    <xcrBid>330000</xcrBid>
+    <co2eMitigation>480000</co2eMitigation>
+    <supplyPressure>260000</supplyPressure>
+    <sentimentEffect>0.04</sentimentEffect>
+    <insuranceBuffer>7</insuranceBuffer>
+    <mrvStandard>Verra VMD0053, water table monitoring + eddy covariance</mrvStandard>
+  </project>
+  <project>
+    <id>proj-afforestation</id>
+    <name>Native Species Afforestation</name>
+    <description>Establish new forests on degraded lands using locally-adapted native tree species mixes.</description>
+    <coBenefits>Watershed protection; habitat connectivity; community engagement in planting.</coBenefits>
+    <xcrBid>410000</xcrBid>
+    <co2eMitigation>520000</co2eMitigation>
+    <supplyPressure>330000</supplyPressure>
+    <sentimentEffect>0.05</sentimentEffect>
+    <insuranceBuffer>8</insuranceBuffer>
+    <mrvStandard>Verra VCS Afforestation, remote sensing + plot sampling</mrvStandard>
+  </project>
+  <project>
+    <id>proj-bamboo</id>
+    <name>Bamboo Plantation CDR</name>
+    <description>Fast-growing bamboo cultivation with harvest for durable products and biochar production.</description>
+    <coBenefits>Rapid biomass growth; sustainable building materials; erosion control.</coBenefits>
+    <xcrBid>280000</xcrBid>
+    <co2eMitigation>360000</co2eMitigation>
+    <supplyPressure>240000</supplyPressure>
+    <sentimentEffect>0.04</sentimentEffect>
+    <insuranceBuffer>5</insuranceBuffer>
+    <mrvStandard>Allometric equations, harvest records verified</mrvStandard>
   </project>
 </projects>

@@ -1,0 +1,130 @@
+Product Requirements Document (PRD)
+Title: Global Carbon Reward RPG — Cooperation, Escalation, and Inflation Modules
+
+Overview
+- Goal: Ship three cooperation mechanics, time‑escalating events, and an induced inflation constraint into the existing quarterly, turn‑based simulation so that coordinated behavior visibly increases private capital, tightens market spreads, and reduces interventions while staying within an annual inflation target ≤1.5%.[1]
+- Scope: Systems design, data structures, hooks in the turn loop, scoreboard metrics, and acceptance tests. UI is minimal (CLI or simple panels), but outputs must be structured for later integration.[1]
+- Non‑goals: Visual polish, networking, persistence beyond run logs, and real‑data calibration.[1]
+
+Gameplay context
+- Cadence: 1 turn = 1 quarter, 2025–2050. Annual “anchor” updates occur every 4 turns (guidance refresh, science synthesis, diplomacy summit).[1]
+- Core loop phases: Player Decisions → Projects & Contracts → Market & Interventions → Science & Events → Governance & Legitimacy → Scoring → Advance Time.[1]
+
+Features to implement
+
+A) Cooperation mechanics (3)
+1) Supermajority dividend
+- Trigger: Any floor path or MRV standard vote passes with ≥66% voting power.[1]
+- Effect: For 2–4 turns:
+  - +CredibilityIndex: +5 to +10 (configurable).[1]
+  - Intervention probability: multiply by 0.8 (configurable).[1]
+  - Milestone success odds: +10% additive.[1]
+- Guardrails: Consecutive dividends suffer 50% effectiveness. Simple‑majority grants no dividend.[1]
+
+2) Joint MRV procurement
+- Trigger: Coalition of ≥3 players funds shared MRV (satellite + ground).[1]
+- Effect (persistent while active, with annual upkeep vote):
+  - Verification lag: −50% for Channels 1/3, −25% for Channel 2.[1]
+  - Fraud probability: ×0.5 baseline.[1]
+  - Private demand: +5–10% uplift.[1]
+- Lapse rule: If upkeep fails, benefits end immediately and apply one‑turn “audit backlog” (slower tranching).[1]
+
+3) Coordinated R surge windows
+- Trigger: ≥3 players declare a 2‑turn coordinated R multiplier on the same sector/tech.[1]
+- Effect (for that sector, globally, 2 turns):
+  - Effective cost: −10–15% (express as higher CO2e per XCR or faster capacity ramp).[1]
+  - Milestone timing: due milestones within 2 turns resolve 1 quarter earlier.[1]
+  - Guidance trust: small increase to spot–floor trust premium.[1]
+- Guardrails: Solo surges = half effect; repeating same sector back‑to‑back halves bonus.[1]
+
+B) Coordination-to-capital pipeline
+- CoordinationIndex (0–100) with components:
+  - Coalition size (0–40), supermajority rate last 4 turns (0–30), standards alignment via joint MRV (0–20), reciprocity delivered vs promised (0–10).[1]
+- Effects mapped each quarter:
+  - PrivateDemandMultiplier = 1 + 0.01 * sqrt(Index).[1]
+  - TrustPremiumUSD = 0.05 * (Index/100) * floor.[1]
+  - Volatility *= (1 − 0.003 * Index).[1]
+  - InterventionProb *= (1 − min(0.35, 0.0035 * Index)).[1]
+- Decay: −1 baseline per turn; contributions capped and time‑bound.[1]
+
+C) Event escalation by phase and stress
+- Phases: 2025–2032 (low/moderate), 2033–2041 (medium/high), 2042–2050 (high/low‑frequency).[1]
+- StressIndex drivers: cumulative interventions, credibility < 50, budget gap vs path, recent RCC step‑ups.[1]
+- Per event type:
+  - DrawProbability = BaseProb * (1 + PhaseWeight) * (1 + α*Stress).[1]
+  - Severity = clamp(RandomRange * (1 + β*Stress), min, max).[1]
+- Event templates to include:
+  - Tipping alarms (budget shrink, RCC up), technical breakthroughs (MRV, learning), market confidence shocks (rumors, scandals), compound climate hazards (heat/drought/fire, storms).[1]
+
+D) Induced inflation system
+- Variable: InflationState.pi (annualized %); target ≤1.5%, tolerance to 3%.[1]
+- Quarterly update:
+  - Δπ = 0.4*floor_move + 0.2*guidance_move − 0.3*private_share + 0.3*cqe + 0.2*r_surge + 0.4*supply_shocks − 0.1*credibility − 0.15*coordination.[1]
+  - pi = pi*inertia + shock_sensitivity*Δπ (defaults: inertia 0.85, sensitivity 1.0).[1]
+- Scoring:
+  - Annual InflationPenalty = max(0, pi − 1.5).[1]
+  - Recession events: allow “stabilization window” with π +0.3–0.7 pp for ≤3 turns; if output gap avoided (fewer delays, stable private share), grant StabilizationBonus.[1]
+
+E) Scoreboard outputs
+- Per quarter:
+  - CO2e removed (verified) by channel; spread; intervention probability; private vs CQE volumes; credibility; coordination index; milestone reliability; clawback rate; inflation nowcast.[1]
+- Per year:
+  - Annual and cumulative CO2e; remaining budget; floor and guidance alignment to RCC; interventions YTD and cumulative; rolling private share; MRV integrity (lag, fraud, CES level); coalition health (tier, supermajority rate, joint MRV, R windows).[1]
+
+Technical requirements
+
+Data structures
+- Add:
+  - CoordinationIndex (fields + methods listed).[1]
+  - CoalitionManager (members, votes, joint MRV, R surges, reciprocity escrow).[1]
+  - PhaseManager (phase_of_year, phase_weight, stress_index).[1]
+  - InflationState (pi, inertia, shock_sensitivity, update).[1]
+
+APIs/hooks
+- update_coordination_effects(state, coalition) -> None
+- compute_event_draws(state, phase, stress) -> List[EventTuple]
+- apply_supermajority_dividend(state, turns) -> None
+- apply_joint_mrv_effects(state, active) -> None
+- apply_coordinated_r_surge(state, sector, turns) -> None
+- update_inflation(state, components) -> None
+- compute_quarter_metrics(state) -> dict
+- compute_annual_metrics(state) -> dict[1]
+
+Balancing and caps
+- Default caps:
+  - Dividend credibility +10 max; intervention reduction 35% cap via coordination scaler; trust premium ≤ 10% of floor; volatility floor at 0.05; inflation tolerance at 3% before heavy penalties.[1]
+
+Acceptance criteria
+
+AC1: Coordination boosts private capital
+- Given a coalition with members ≥5, a supermajority pass this quarter, and joint MRV active, then CoordinationIndex ≥ 50, PrivateDemandMultiplier ≥ 1.07, InterventionProb reduced by ≥15% vs baseline.[1]
+
+AC2: Supermajority dividend works and decays
+- When a supermajority passes, credibility increases by configured amount and decays after 2–4 turns; back‑to‑back dividends show 50% effectiveness on the second.[1]
+
+AC3: Event escalation by phase/stress
+- In Phase 3 with stress ≥ 6, tipping alarm probability and severity are both higher than in Phase 1 with stress ≤ 2; logs show applied multipliers.[1]
+
+AC4: Inflation responds to levers
+- A ≥$10/t floor hike with low credibility increases π next quarter; with private share ≥80% and coordination ≥60, the π increase is at least 30% smaller than without those conditions.[1]
+
+AC5: Scoreboard completeness
+- Per‑quarter and per‑year metrics are emitted as structured dicts and printed; unit tests assert presence and value ranges.[1]
+
+Nonfunctional
+- Deterministic mode with RNG seed for tests.
+- All new parameters configurable via a config dict.
+- Functions documented and type‑annotated.
+
+Deliverables
+- Updated Python modules (simulation core + new modules).
+- Unit tests (smoke + targeted).
+- README updated with run and test instructions.
+- Change log detailing new config knobs.[1]
+
+Notes for developer
+- Keep public interfaces stable; prefer pure functions where possible for testability.
+- Instrument event, vote, and inflation calculations with lightweight logging for traceability.
+- Avoid hidden singletons; inject dependencies (config, RNG) where feasible.[1]
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/11588861/fa70c2a7-e0bc-4194-bae2-fe8f18151eb5/Chen_2025_Carbon-Reward-Policy_Working-Paper-v3.pdf)

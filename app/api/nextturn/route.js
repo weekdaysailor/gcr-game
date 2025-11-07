@@ -9,6 +9,9 @@ import {
   getProjectLibrary,
   normalizeProject,
 } from '../../../lib/data';
+import { advanceTimeState } from '../../../lib/timePhase';
+import { createCoalitionManager } from '../../../lib/coalition';
+import { updateCoordinationIndex } from '../../../lib/coordination';
 
 function applyEventOperations(state, event) {
   if (!event) return state;
@@ -37,10 +40,12 @@ function applyEventOperations(state, event) {
 
 export async function POST(request) {
   const clientState = await request.json();
-  const { chosenProjectId, floorDecision, playerCountry } = clientState;
+  const { playerCountry, forceAdvance } = clientState;
 
   let state = await loadGameState();
   state.votes = Array.isArray(state.votes) ? state.votes : [];
+  state.turnSubmissions = Array.isArray(state.turnSubmissions) ? state.turnSubmissions : [];
+  state.members = Array.isArray(state.members) ? state.members : [];
 
   // start of turn
   state.incomingSupply = 0;
@@ -53,11 +58,76 @@ export async function POST(request) {
     }
   }
 
+  // Check if all players are ready
+  const currentTurnSubmissions = state.turnSubmissions.filter((s) => s.turn === state.turn);
+  const allReady = state.members.length > 0 &&
+                   currentTurnSubmissions.length >= state.members.length;
+
+  // If not all ready and not forcing advance, return waiting status
+  if (!allReady && !forceAdvance) {
+    const waitingFor = state.members
+      .filter((m) => !currentTurnSubmissions.find((s) => s.country === m.country))
+      .map((m) => m.country);
+
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        waiting: true,
+        waitingFor,
+        submissionsCount: currentTurnSubmissions.length,
+        totalPlayers: state.members.length,
+        message: 'Waiting for all players to submit their turn',
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  // Initialize coalition manager
+  const coalitionManager = createCoalitionManager(state);
+
+  // Aggregate choices from all players
+  // Floor decisions use GDP-weighted voting
+  // Project selection uses equal weight (random pick)
+  const projectChoices = [];
+
+  currentTurnSubmissions.forEach((submission) => {
+    if (submission.chosenProjectId) {
+      projectChoices.push(submission.chosenProjectId);
+    }
+  });
+
+  // Check for supermajority on floor decision (GDP-weighted)
+  const floorVotes = currentTurnSubmissions
+    .filter(s => s.floorDecision)
+    .map(s => ({
+      country: s.country,
+      vote: s.floorDecision,
+    }));
+
+  const supermajorityResult = coalitionManager.checkSupermajorityVote(
+    floorVotes,
+    state.members,
+    'floor'
+  );
+
+  let floorDecision = supermajorityResult.decision;
+  const supermajorityPassed = supermajorityResult.passed;
+
+  // Pick a random project from the choices (equal weight)
+  const chosenProjectId = projectChoices.length > 0
+    ? projectChoices[Math.floor(Math.random() * projectChoices.length)]
+    : null;
+
   // 1) apply chosen project
   const projectLibrary = await getProjectLibrary();
 
   let projectAvoidedEmissions = 0;
   let rewardAmount = 0;
+  let appliedRMultiplier = 1.0;
+
   if (chosenProjectId) {
     const fromState = Array.isArray(state.projects)
       ? state.projects.find((p) => p && p.id === chosenProjectId)
@@ -70,7 +140,24 @@ export async function POST(request) {
       state.incomingSupply = (state.incomingSupply || 0) + proj.supplyPressure;
 
       projectAvoidedEmissions = proj.co2eMitigation;
-      rewardAmount = proj.xcrBid || proj.co2eMitigation;
+
+      // Get R multiplier from project adjustments
+      const projectRAdjustments = state.projectRAdjustments?.[chosenProjectId] || {};
+      const rValues = Object.values(projectRAdjustments).map(adj => adj.R);
+
+      // Check for R consensus (all submitted values must be the same)
+      if (rValues.length > 0) {
+        const uniqueRValues = [...new Set(rValues)];
+        if (uniqueRValues.length === 1) {
+          // Consensus exists - use the agreed R value
+          appliedRMultiplier = uniqueRValues[0];
+        }
+        // If no consensus, default to 1.0 (already set above)
+      }
+
+      // Apply R multiplier to reward
+      const baseReward = proj.xcrBid || proj.co2eMitigation;
+      rewardAmount = baseReward * appliedRMultiplier;
     }
   } else {
     state.incomingSupply = state.incomingSupply || 0;
@@ -145,6 +232,23 @@ export async function POST(request) {
     }
   }
 
+  // 4.5) Coalition mechanics (Phase 2)
+  // Apply supermajority dividend if vote passed
+  if (supermajorityPassed && floorDecision !== 'hold') {
+    coalitionManager.applySupermajorityDividend({
+      credibilityBoost: 10,
+      interventionMult: 0.8,
+      milestoneBonusPct: 10,
+      duration: 4,
+    });
+  }
+
+  // Decay coalitions
+  coalitionManager.decayAll();
+
+  // Update coordination index
+  updateCoordinationIndex(state);
+
   // 5) market move ONCE
   const supplyShock = Math.min(state.incomingSupply || 0, 500000);
   let newMarket =
@@ -173,21 +277,41 @@ export async function POST(request) {
   state.history = state.history || [];
   state.history.unshift({
     turn: state.turn,
+    year: state.year,
+    quarter: state.quarter,
     event: event ? event.title : 'none',
     project: chosenProjectId || 'none',
     floor: state.floor,
     market: state.market,
     mitigation: projectAvoidedEmissions,
     xcrAwarded: rewardAmount,
+    rMultiplier: appliedRMultiplier, // Track R multiplier used
     inflation: state.inflation,
     guidanceBroken,
+    supermajorityPassed, // Phase 2: track supermajority
     time: new Date().toISOString(),
   });
   state.history = state.history.slice(0, 20);
 
-  // 9) next turn
-  state.turn += 1;
+  // 9) next turn - advance time
+  const nextTime = advanceTimeState({
+    year: state.year,
+    quarter: state.quarter,
+    turn: state.turn,
+  });
+
+  state.year = nextTime.year;
+  state.quarter = nextTime.quarter;
+  state.turn = nextTime.turn;
+  state.phase = nextTime.phase;
+  state.isAnnualAnchor = nextTime.isAnnualAnchor;
+
+  // Generate new projects for next turn
   state.projects = await generateProjects();
+
+  // Clear turn submissions and R adjustments for the new turn
+  state.turnSubmissions = [];
+  state.projectRAdjustments = {};
 
   await saveGameState(state);
 

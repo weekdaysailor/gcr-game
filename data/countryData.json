@@ -1,0 +1,53 @@
+{
+  "countries": [
+    {
+      "code": "USA",
+      "name": "United States",
+      "gdpUSD": 28781,
+      "gdpYear": 2024,
+      "defaultNdc": "Reduce economy-wide GHG emissions 50-52% below 2005 levels by 2030",
+      "parisAligned": true
+    },
+    {
+      "code": "EU",
+      "name": "European Union",
+      "gdpUSD": 18350,
+      "gdpYear": 2024,
+      "defaultNdc": "Reduce net GHG emissions at least 55% below 1990 levels by 2030",
+      "parisAligned": true
+    },
+    {
+      "code": "CHN",
+      "name": "China",
+      "gdpUSD": 18532,
+      "gdpYear": 2024,
+      "defaultNdc": "Peak CO2 emissions before 2030 and achieve carbon neutrality before 2060",
+      "parisAligned": false
+    },
+    {
+      "code": "IND",
+      "name": "India",
+      "gdpUSD": 3937,
+      "gdpYear": 2024,
+      "defaultNdc": "Reduce emissions intensity of GDP by 45% by 2030 from 2005 level",
+      "parisAligned": false
+    },
+    {
+      "code": "ECU",
+      "name": "Ecuador",
+      "gdpUSD": 118,
+      "gdpYear": 2024,
+      "defaultNdc": "GHG reductions of 7% and additional reduction of 8% vs BAU",
+      "parisAligned": true
+    }
+  ],
+  "notes": {
+    "gdpSource": "IMF World Economic Outlook, October 2024",
+    "gdpUnits": "Billions USD (nominal)",
+    "normalization": "When countries join, GDP weights are normalized so sum equals member count",
+    "votingRules": {
+      "projectSelection": "Equal weight (1 vote per country)",
+      "floorChanges": "GDP-weighted as per normalized gdpWeight"
+    }
+  }
+}
